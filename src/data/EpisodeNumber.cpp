@@ -37,12 +37,12 @@ int EpisodeNumber::toInt() const
     return m_episodeNumber;
 }
 
-QString EpisodeNumber::toPaddedString() const
+QString EpisodeNumber::toPaddedString(int digits) const
 {
     if (m_episodeNumber == EpisodeNumber::NoEpisode.toInt()) {
         return QStringLiteral("xx");
     }
-    return QString::number(m_episodeNumber).prepend((m_episodeNumber < 10) ? "0" : "");
+    return QString("%1").arg(m_episodeNumber, digits, 10, QChar('0'));
 }
 
 QString EpisodeNumber::toString() const

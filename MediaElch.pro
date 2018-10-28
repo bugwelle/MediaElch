@@ -8,7 +8,7 @@ TEMPLATE = app
 TARGET = MediaElch
 INCLUDEPATH += $$PWD/src
 
-QT += core gui network xml sql widgets multimedia multimediawidgets \
+QT += core network xml sql widgets multimedia multimediawidgets \
       concurrent qml quick quickwidgets opengl
 
 CONFIG += warn_on c++14

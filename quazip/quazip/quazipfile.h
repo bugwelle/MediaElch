@@ -2,21 +2,22 @@
 #define QUA_ZIPFILE_H
 
 /*
-Copyright (C) 2005-2011 Sergey A. Tachenov
+Copyright (C) 2005-2014 Sergey A. Tachenov
 
-This program is free software; you can redistribute it and/or modify it
-under the terms of the GNU Lesser General Public License as published by
-the Free Software Foundation; either version 2 of the License, or (at
-your option) any later version.
+This file is part of QuaZIP.
 
-This program is distributed in the hope that it will be useful, but
-WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
-General Public License for more details.
+QuaZIP is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as published by
+the Free Software Foundation, either version 2.1 of the License, or
+(at your option) any later version.
+
+QuaZIP is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
 
 You should have received a copy of the GNU Lesser General Public License
-along with this program; if not, write to the Free Software Foundation,
-Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+along with QuaZIP.  If not, see <http://www.gnu.org/licenses/>.
 
 See COPYING file for the full LGPL text.
 
@@ -80,9 +81,9 @@ class QUAZIP_EXPORT QuaZipFile: public QIODevice {
     QuaZipFile& operator=(const QuaZipFile& that);
   protected:
     /// Implementation of the QIODevice::readData().
-    qint64 readData(char *data, qint64 maxSize) override;
+    qint64 readData(char *data, qint64 maxSize);
     /// Implementation of the QIODevice::writeData().
-    qint64 writeData(const char *data, qint64 maxSize) override;
+    qint64 writeData(const char *data, qint64 maxSize);
   public:
     /// Constructs a QuaZipFile instance.
     /** You should use setZipName() and setFileName() or setZip() before
@@ -173,7 +174,7 @@ class QUAZIP_EXPORT QuaZipFile: public QIODevice {
     /** Closes file if open, destructs internal QuaZip object (if it
      * exists and \em is internal, of course).
      **/
-    ~QuaZipFile() override;
+    virtual ~QuaZipFile();
     /// Returns the ZIP archive file name.
     /** If this object was created by passing QuaZip pointer to the
      * constructor, this function will return that QuaZip's file name
@@ -288,7 +289,7 @@ class QUAZIP_EXPORT QuaZipFile: public QIODevice {
      * QuaZipFile does not support unbuffered reading. So do not pass
      * QIODevice::Unbuffered flag in \a mode, or open will fail.
      **/
-    bool open(OpenMode mode) override;
+    virtual bool open(OpenMode mode);
     /// Opens a file for reading.
     /** \overload
      * Argument \a password specifies a password to decrypt the file. If
@@ -342,7 +343,7 @@ class QUAZIP_EXPORT QuaZipFile: public QIODevice {
         int method =Z_DEFLATED, int level =Z_DEFAULT_COMPRESSION, bool raw =false,
         int windowBits =-MAX_WBITS, int memLevel =DEF_MEM_LEVEL, int strategy =Z_DEFAULT_STRATEGY);
     /// Returns \c true, but \ref quazipfile-sequential "beware"!
-    bool isSequential()const override;
+    virtual bool isSequential()const;
     /// Returns current position in the file.
     /** Implementation of the QIODevice::pos(). When reading, this
      * function is a wrapper to the ZIP/UNZIP unztell(), therefore it is
@@ -365,7 +366,7 @@ class QUAZIP_EXPORT QuaZipFile: public QIODevice {
      * Error code returned by getZipError() is not affected by this
      * function call.
      **/
-    qint64 pos()const override;
+    virtual qint64 pos()const;
     /// Returns \c true if the end of file was reached.
     /** This function returns \c false in the case of error. This means
      * that you called this function on either not open file, or a file
@@ -383,7 +384,7 @@ class QUAZIP_EXPORT QuaZipFile: public QIODevice {
      * Error code returned by getZipError() is not affected by this
      * function call.
      **/
-    bool atEnd()const override;
+    virtual bool atEnd()const;
     /// Returns file size.
     /** This function returns csize() if the file is open for reading in
      * raw mode, usize() if it is open for reading in normal mode and
@@ -397,7 +398,7 @@ class QUAZIP_EXPORT QuaZipFile: public QIODevice {
      * name would be very misguiding otherwise, so just keep in mind
      * this inconsistence.
      **/
-    qint64 size()const override;
+    virtual qint64 size()const;
     /// Returns compressed file size.
     /** Equivalent to calling getFileInfo() and then getting
      * compressedSize field, but more convenient and faster.
@@ -426,17 +427,30 @@ class QUAZIP_EXPORT QuaZipFile: public QIODevice {
      *
      * File must be open for reading before calling this function.
      *
-     * Returns \c false in the case of an error.
+     * \return \c false in the case of an error.
+     *
+     * This function doesn't support zip64, but will still work fine on zip64
+     * archives if file sizes are below 4 GB, otherwise the values will be set
+     * as if converted using QuaZipFileInfo64::toQuaZipFileInfo().
+     *
+     * \sa getFileInfo(QuaZipFileInfo64*)
      **/
     bool getFileInfo(QuaZipFileInfo *info);
+    /// Gets information about current file with zip64 support.
+    /**
+     * @overload
+     *
+     * \sa getFileInfo(QuaZipFileInfo*)
+     */
+    bool getFileInfo(QuaZipFileInfo64 *info);
     /// Closes the file.
     /** Call getZipError() to determine if the close was successful.
      **/
-    void close() override;
+    virtual void close();
     /// Returns the error code returned by the last ZIP/UNZIP API call.
     int getZipError() const;
     /// Returns the number of bytes available for reading.
-    qint64 bytesAvailable() const override;
+    virtual qint64 bytesAvailable() const;
 };
 
 #endif

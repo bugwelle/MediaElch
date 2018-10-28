@@ -15,7 +15,7 @@ public:
     bool operator<(const EpisodeNumber &other) const;
 
     int toInt() const;
-    QString toPaddedString() const;
+    QString toPaddedString(int digits = 2) const;
     QString toString() const;
 
     static const EpisodeNumber NoEpisode;
