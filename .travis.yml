@@ -23,19 +23,17 @@ branches:
   - travis-archer96
 
 install:
-  - "${TRAVIS_BUILD_DIR}/mediaelch/travis-ci/install_dependencies.sh"
+- "${TRAVIS_BUILD_DIR}/travis-ci/install_dependencies.sh"
 
 before_script:
-  # Move files into subdirecotory
-  - mkdir mediaelch && find . -maxdepth 1 | grep -v mediaelch | xargs -i mv {} ./mediaelch && cd mediaelch
-  - "${TRAVIS_BUILD_DIR}/mediaelch/travis-ci/configure.sh"
+- "${TRAVIS_BUILD_DIR}/travis-ci/configure.sh"
 
 script:
-  - if [ $QT = qtWin ]; then PATH=$PATH:/usr/lib/mxe/usr/bin; fi
-#  - cd build && make -j 2
+- if [ $QT = qtWin ]; then PATH=$PATH:/usr/lib/mxe/usr/bin; fi
+- cd build && make -j 2
 
 after_success:
-  - "${TRAVIS_BUILD_DIR}/mediaelch/travis-ci/package.sh"
+- "${TRAVIS_BUILD_DIR}/travis-ci/package.sh"
 
 deploy:
   - provider: bintray
