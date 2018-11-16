@@ -59,12 +59,39 @@ target_link_libraries(
     Qt5::Xml
 )
 
+# ------------------------------------------------------------------------------
+# Doxygen
+find_package(Doxygen OPTIONAL_COMPONENTS dot)
+
+if(DOXYGEN_FOUND)
+  set(DOXYGEN_PROJECT_NAME "MediaElch")
+  set(DOXYGEN_PROJECT_BRIEF "Media Manager for Kodi.")
+  set(DOXYGEN_PROJECT_LOGO "doc/MediaElch.png")
+  set(DOXYGEN_GENERATE_TREEVIEW YES)
+
+  doxygen_add_docs(
+    docs
+    ./README.md
+    ./CONTRIBUTING.md
+    ./changelog.md
+    ${PROJECT_SOURCE_DIR}/src
+    COMMENT
+    "Generate doxygen documentation"
+  )
+
+else()
+  message("Doxygen needs to be installed to generate the documentation")
+
+endif()
+
+# ------------------------------------------------------------------------------
 # libmediainfo requires dlopen/dlclose
 target_link_libraries(mediaelch PRIVATE ${CMAKE_DL_LIBS})
 
 add_subdirectory(quazip)
 target_link_libraries(mediaelch PRIVATE quazip_static)
 
+# ------------------------------------------------------------------------------
 # Warnings
 if(GNU)
   target_compile_options(
@@ -99,9 +126,12 @@ elseif(Clang)
 
 endif()
 
+# ------------------------------------------------------------------------------
 # Installation
 install(TARGETS mediaelch RUNTIME DESTINATION bin)
 
+# ------------------------------------------------------------------------------
+# Sources
 target_sources(mediaelch PRIVATE MediaElch.qrc i18n.qrc ui.qrc)
 
 target_sources(
