@@ -112,10 +112,12 @@ if [ $(lc "${OS_NAME}") = "linux" ]; then
 		fold_end
 
 		#######################################################
-		# Compiler
+		# Compiler & Build System
 
 		fold_start "update_compiler"
-		print_info "Updating GCC"
+        print_info "Installing CMake"
+        sudo apt install cmake
+        print_info "Updating GCC"
 		sudo apt-get install -y g++-7 gcc-7
 		sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 90
 		sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 90
@@ -168,9 +170,11 @@ elif [ "${OS_NAME}" = "Darwin" ]; then
 	fold_end
 
 	fold_start "brew_install"
-	print_info "Brewing packages: qt5"
-	brew install qt5
-	fold_end
+    print_info "Brewing packages: cmake"
+    brew install cmake
+    print_info "Brewing packages: qt5"
+    brew install qt5
+    fold_end
 
 else
 	print_error "Unknown operating system: ${OS_NAME}"

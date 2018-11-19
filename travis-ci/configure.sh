@@ -21,19 +21,19 @@ if [ $(lc "${OS_NAME}") = "linux" ]; then
 
 	if [ "${QT}" = "qtWin" ]; then
 		PATH="$PATH:${MXEDIR}/usr/bin"
-		$MXEDIR/usr/bin/${MXETARGET}-qmake-qt5 --version
-		$MXEDIR/usr/bin/${MXETARGET}-qmake-qt5 ../MediaElch.pro CONFIG+=release
+		$MXEDIR/usr/bin/${MXETARGET}-cmake --version
+		$MXEDIR/usr/bin/${MXETARGET}-cmake .. -DCMAKE_BUILD_TYPE=Release
 
 	else
 		PATH="/opt/${QT}/bin:$PATH"
-		qmake --version
-		qmake ../MediaElch.pro CONFIG+=release PREFIX=/usr
+		cmake --version
+		cmake .. -DCMAKE_BUILD_TYPE=Release
 	fi
 
 elif [ "${OS_NAME}" = "Darwin" ]; then
 	PATH="/usr/local/opt/qt/bin:$PATH"
-	qmake --version
-	qmake ../MediaElch.pro CONFIG+=release
+	cmake --version
+	cmake .. -DCMAKE_BUILD_TYPE=Release
 
 else
 	print_error "Unknown operating system: ${OS_NAME}"
