@@ -52,7 +52,7 @@ ubsan {
     WARNINGS += -Winit-self -Wpointer-arith
     WARNINGS += -Wlogical-op -Wunsafe-loop-optimizations
     WARNINGS += -Wshadow
-    WARNINGS += -Wno-error=unsafe-loop-optimizations
+    WARNINGS += -Wno-unsafe-loop-optimizations
 }
 *-clang* {
     WARNINGS += -Wextra
