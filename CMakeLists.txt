@@ -105,6 +105,18 @@ find_package(
   REQUIRED
 )
 
+# ------------------------------------------------------------------------------
+# Dependencies as submodules; see https://youtu.be/bsXLMQ6WgIk?t=50m30s
+
+set(CMAKE_PREFIX_PATH "third_party")
+set(as_subproject QuaZip)
+
+macro(find_package)
+  if(NOT "${ARGV0}" IN_LIST as_subproject)
+    _find_package(${ARGV})
+  endif()
+endmacro()
+
 # -----------------------------------------------------------------------------
 # Subdirectories and main executable
 

@@ -1,5 +1,7 @@
 add_library(libmediaelch)
 
+find_package(QuaZip 0.7 REQUIRED)
+
 add_subdirectory(cli)
 add_subdirectory(concerts)
 add_subdirectory(data)
@@ -34,7 +36,7 @@ target_link_libraries(
     Qt5::Widgets
     Qt5::Xml
   PRIVATE
-    quazip
+    QuaZip::QuaZip
     # MediaElch object libraries
     mediaelch_concert
     mediaelch_data
