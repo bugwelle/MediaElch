@@ -22,6 +22,7 @@
 #include "ui/music/MusicSearch.h"
 #include "ui/notifications/NotificationBox.h"
 #include "ui/notifications/Notificator.h"
+#include "ui/MacTouchbar.h"
 
 #include <QCheckBox>
 #include <QDebug>
@@ -275,6 +276,9 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWi
 #else
     qDebug() << "Updater is disabled";
 #endif
+
+    MacTouchbar::instance()->init();
+
 }
 
 /**

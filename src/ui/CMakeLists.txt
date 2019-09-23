@@ -17,6 +17,10 @@ add_library(
   support/SupportDialog.cpp
 )
 
+if(APPLE)
+  target_sources(mediaelch_ui PRIVATE MacTouchbar.mm)
+endif()
+
 target_link_libraries(
   mediaelch_ui PRIVATE Qt5::Widgets Qt5::Sql Qt5::Network Qt5::Core
                        Qt5::Multimedia

@@ -88,7 +88,14 @@ if(APPLE)
   if(NOT FOUNDATION)
     message(FATAL_ERROR "Foundation framework not found")
   endif()
-  target_link_libraries(libmediaelch PRIVATE "${FOUNDATION}")
+
+  find_library(APPKIT AppKit)
+  mark_as_advanced(APPKIT)
+  if(NOT APPKIT)
+    message(FATAL_ERROR "AppKit framework not found")
+  endif()
+  
+  target_link_libraries(libmediaelch PRIVATE "${FOUNDATION}" "${APPKIT}")
 endif()
 
 # ------------------------------------------------------------------------------

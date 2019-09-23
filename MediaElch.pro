@@ -45,7 +45,7 @@ CONFIG += warn_on c++14
 }
 
 unix:LIBS += -lcurl
-macx:LIBS += -framework Foundation
+macx:LIBS += -framework Foundation -framework AppKit
 unix:!macx {
     LIBS += -ldl
 }
@@ -402,7 +402,8 @@ SOURCES += src/main.cpp \
     src/movies/MovieSet.cpp
 
 macx {
-    OBJECTIVE_SOURCES += src/ui/notifications/MacNotificationHandler.mm
+    OBJECTIVE_SOURCES += src/ui/notifications/MacNotificationHandler.mm \
+        src/ui/MacTouchbar.mm
 }
 
 HEADERS  += Version.h \
@@ -410,6 +411,7 @@ HEADERS  += Version.h \
     src/data/MediaInfoFile.h \
     src/network/NetworkRequest.h \
     src/network/NetworkManager.h \
+    src/ui/MacTouchbar.h \
     src/ui/concerts/ConcertFilesWidget.h \
     src/ui/concerts/ConcertSearch.h \
     src/ui/concerts/ConcertSearchWidget.h \
