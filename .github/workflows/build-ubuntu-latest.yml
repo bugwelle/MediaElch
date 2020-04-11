@@ -1,4 +1,4 @@
-name: C/C++ CI
+name: Build Latest Ubuntu
 
 on:
   push:
@@ -8,7 +8,6 @@ on:
 
 jobs:
   build:
-    name: Build Latest Ubuntu
     runs-on: ubuntu-latest
 
     steps:
