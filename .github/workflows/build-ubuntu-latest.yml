@@ -16,9 +16,7 @@ jobs:
       with:
         submodules: true
     - name: install dependencies
-      run: |
-        sudo apt install build-essential git libcurl4-gnutls-dev libmediainfo-dev \
-          qt5-default qtmultimedia5-dev qtdeclarative5-dev
+      run: apt-get install build-essential git libcurl4-gnutls-dev libmediainfo-dev qt5-default qtmultimedia5-dev qtdeclarative5-dev
     - name: build mediaelch
       run: |
         mkdir build
