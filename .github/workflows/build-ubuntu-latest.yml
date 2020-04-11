@@ -8,18 +8,20 @@ on:
 
 jobs:
   build:
+
     runs-on: ubuntu-latest
 
     steps:
-    - name: checkout repository
-      uses: actions/checkout@v2
+    - uses: actions/checkout@v2
       with:
         submodules: true
     - name: install dependencies
-      run: sudo apt install build-essential git libcurl4-gnutls-dev libmediainfo-dev
-             qt5-default qtmultimedia5-dev qtdeclarative5-dev
+      run: |
+        sudo apt install build-essential git libcurl4-gnutls-dev libmediainfo-dev
+          qt5-default qtmultimedia5-dev qtdeclarative5-dev
     - name: build mediaelch
-      run: mkdir build
-           cd build
-           qmake ..
-           make -j4
+      run: |
+        mkdir build
+        cd build
+        qmake ..
+        make -j4
