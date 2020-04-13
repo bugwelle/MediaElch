@@ -630,19 +630,29 @@ void TvShowWidgetEpisode::onStartScraperSearch()
 
     emit sigSetActionSearchEnabled(false, MainWidgets::TvShows);
     emit sigSetActionSaveEnabled(false, MainWidgets::TvShows);
-    TvShowSearch::instance()->setSearchType(TvShowType::Episode);
-    TvShowSearch::instance()->exec(m_episode->showTitle(), m_episode->tvShow()->tvdbId());
-    if (TvShowSearch::instance()->result() == QDialog::Accepted) {
+
+    auto* searchWidget = new TvShowSearch(this);
+    searchWidget->setSearchType(TvShowType::Episode);
+
+    const TvDbId id = m_episode->tvShow()->tvdbId();
+    const QString search = id.isValid() ? id.withPrefix() : m_episode->showTitle();
+    searchWidget->execWithSearch(search);
+
+    if (searchWidget->result() == QDialog::Accepted) {
         onSetEnabled(false);
         connect(
             m_episode.data(), &TvShowEpisode::sigLoaded, this, &TvShowWidgetEpisode::onLoadDone, Qt::UniqueConnection);
-        m_episode->loadData(TvShowSearch::instance()->scraperId(),
-            Manager::instance()->scrapers().tvScrapers().at(0),
-            TvShowSearch::instance()->infosToLoad());
+        m_episode->scrapeData(searchWidget->scraper(),
+            searchWidget->locale(),
+            searchWidget->showIdentifier(),
+            searchWidget->seasonOrder(),
+            searchWidget->episodeDetailsToLoad());
     } else {
         emit sigSetActionSearchEnabled(true, MainWidgets::TvShows);
         emit sigSetActionSaveEnabled(true, MainWidgets::TvShows);
     }
+
+    searchWidget->deleteLater();
 }
 
 /**

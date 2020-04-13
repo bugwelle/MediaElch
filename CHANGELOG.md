@@ -1,6 +1,9 @@
 # Changelog
 
-## 2.6.8 - *tbd*
+## 2.7.0 - *tbd*
+
+This is the next "big" MediaElch version. This version brings fully rewritten TV scrapers including
+improved user interfaces, better user experience and a new TV show scraper.
 
 MediaElch now requires Qt 5.6 or later. Qt 5.6 was released in 2016 and we highly recommend to update
 to the latest version if your system supports it (this only affects MediaElch's version for Linux
@@ -27,6 +30,16 @@ Note: You may need to set "DVD order" in your settings again as the internal set
    In v2.6.4 MediaElch started to ignore the original title (i.e. did not save it) if it was the same
    as the "normal" title.  We now added an option to reverse this behavior.
  - TV shows and episodes now support TMDb IDs (#1010)
+ - New TV show search dialog  
+   You can now distinguish between episode and TV show details that you want to load using the
+   selected scraper.
+ - New TV scraper settings  
+   The settings dialog for TV scrapers has been completely redesigned.  It now features the
+   scraper's website, description, terms of service and more so that you know how MediaElch
+   uses the scraper.
+ - New Custom TV scraper  
+   The custom TV scraper has got a new look and feel.  You can select the scrapers you want for
+   episode and TV show details.
 
 ### Internal Improvements and Changes
 

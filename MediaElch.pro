@@ -275,14 +275,37 @@ SOURCES += src/main.cpp \
     src/scrapers/movie/VideoBuster.cpp \
     src/scrapers/music/TvTunes.cpp \
     src/scrapers/music/UniversalMusicScraper.cpp \
-    src/scrapers/tv_show/TheTvDb.cpp \
-    src/scrapers/tv_show/thetvdb/ApiRequest.cpp \
-    src/scrapers/tv_show/thetvdb/Cache.cpp \
-    src/scrapers/tv_show/thetvdb/EpisodeLoader.cpp \
-    src/scrapers/tv_show/thetvdb/EpisodeParser.cpp \
-    src/scrapers/tv_show/thetvdb/Search.cpp \
-    src/scrapers/tv_show/thetvdb/ShowLoader.cpp \
-    src/scrapers/tv_show/thetvdb/ShowParser.cpp \
+    src/scrapers/tv_show/TvScraper.cpp \
+    src/scrapers/tv_show/ShowMerger.cpp \
+    src/scrapers/tv_show/empty/EmptyTvScraper.cpp \
+    src/scrapers/tv_show/custom/CustomTvScraper.cpp \
+    src/scrapers/tv_show/custom/CustomTvScraperConfig.cpp \
+    src/scrapers/tv_show/custom/CustomEpisodeScrapeJob.cpp \
+    src/scrapers/tv_show/custom/CustomSeasonScrapeJob.cpp \
+    src/scrapers/tv_show/custom/CustomShowScrapeJob.cpp \
+    src/scrapers/tv_show/imdb/ImdbTv.cpp \
+    src/scrapers/tv_show/imdb/ImdbTvApi.cpp \
+    src/scrapers/tv_show/imdb/ImdbTvEpisodeScrapeJob.cpp \
+    src/scrapers/tv_show/imdb/ImdbTvShowSearchJob.cpp \
+    src/scrapers/tv_show/imdb/ImdbTvShowParser.cpp \
+    src/scrapers/tv_show/imdb/ImdbTvShowScrapeJob.cpp \
+    src/scrapers/tv_show/imdb/ImdbTvSeasonScrapeJob.cpp \
+    src/scrapers/tv_show/thetvdb/TheTvDb.cpp \
+    src/scrapers/tv_show/thetvdb/TheTvDbApi.cpp \
+    src/scrapers/tv_show/thetvdb/TheTvDbEpisodeScrapeJob.cpp \
+    src/scrapers/tv_show/thetvdb/TheTvDbEpisodeParser.cpp \
+    src/scrapers/tv_show/thetvdb/TheTvDbEpisodesParser.cpp \
+    src/scrapers/tv_show/thetvdb/TheTvDbSearchJob.cpp \
+    src/scrapers/tv_show/thetvdb/TheTvDbShowScrapeJob.cpp \
+    src/scrapers/tv_show/thetvdb/TheTvDbSeasonScrapeJob.cpp \
+    src/scrapers/tv_show/thetvdb/TheTvDbShowParser.cpp \
+    src/scrapers/tv_show/tmdb/TmdbTv.cpp \
+    src/scrapers/tv_show/tmdb/TmdbTvApi.cpp \
+    src/scrapers/tv_show/tmdb/TmdbTvEpisodeScrapeJob.cpp \
+    src/scrapers/tv_show/tmdb/TmdbTvShowSearchJob.cpp \
+    src/scrapers/tv_show/tmdb/TmdbTvShowParser.cpp \
+    src/scrapers/tv_show/tmdb/TmdbTvShowScrapeJob.cpp \
+    src/scrapers/tv_show/tmdb/TmdbTvSeasonScrapeJob.cpp \
     src/ui/movie_sets/MovieListDialog.cpp \
     src/ui/movie_sets/SetsWidget.cpp \
     src/settings/AdvancedSettings.cpp \
@@ -306,6 +329,7 @@ SOURCES += src/main.cpp \
     src/ui/settings/NetworkSettingsWidget.cpp \
     src/ui/settings/ScraperSettingsWidget.cpp \
     src/ui/settings/TvScraperSettingsWidget.cpp \
+    src/ui/settings/CustomTvScraperSettingsWidget.cpp \
     src/ui/settings/TvShowSettingsWidget.cpp \
     src/ui/small_widgets/AlphabeticalList.cpp \
     src/ui/small_widgets/Badge.cpp \
@@ -313,6 +337,7 @@ SOURCES += src/main.cpp \
     src/ui/small_widgets/FilterWidget.cpp \
     src/ui/small_widgets/ImageGallery.cpp \
     src/ui/small_widgets/ImageLabel.cpp \
+    src/ui/small_widgets/LanguageCombo.cpp \
     src/ui/small_widgets/LoadingStreamDetails.cpp \
     src/ui/small_widgets/MediaFlags.cpp \
     src/ui/small_widgets/MessageLabel.cpp \
@@ -337,7 +362,7 @@ SOURCES += src/main.cpp \
     src/scrapers/trailer/HdTrailers.cpp \
     src/ui/tv_show/TvShowMultiScrapeDialog.cpp \
     src/ui/tv_show/TvShowSearch.cpp \
-    src/ui/tv_show/TvShowSearchEpisode.cpp \
+    src/ui/tv_show/TvShowSearchWidget.cpp \
     src/tv_shows/TvShowUpdater.cpp \
     src/tv_shows/TvShowUtils.cpp \
     src/ui/tv_show/TvShowWidget.cpp \
@@ -345,6 +370,7 @@ SOURCES += src/main.cpp \
     src/ui/tv_show/TvShowWidgetSeason.cpp \
     src/ui/tv_show/TvShowWidgetTvShow.cpp \
     src/ui/tv_show/TvTunesDialog.cpp \
+    src/tv_shows/EpisodeMap.cpp \
     src/tv_shows/TvShowModel.cpp \
     src/tv_shows/TvShowProxyModel.cpp \
     src/tv_shows/model/TvShowModelItem.cpp \
@@ -395,7 +421,6 @@ HEADERS  += Version.h \
     src/scrapers/concert/ConcertScraperInterface.h \
     src/scrapers/music/MusicScraperInterface.h \
     src/scrapers/movie/MovieScraperInterface.h \
-    src/scrapers/tv_show/TvScraperInterface.h \
     src/scrapers/ScraperInterface.h \
     src/data/Locale.h \
     src/data/Rating.h \
@@ -546,14 +571,37 @@ HEADERS  += Version.h \
     src/scrapers/movie/VideoBuster.h \
     src/scrapers/music/TvTunes.h \
     src/scrapers/music/UniversalMusicScraper.h \
-    src/scrapers/tv_show/TheTvDb.h \
-    src/scrapers/tv_show/thetvdb/ApiRequest.h \
-    src/scrapers/tv_show/thetvdb/Cache.h \
-    src/scrapers/tv_show/thetvdb/EpisodeLoader.h \
-    src/scrapers/tv_show/thetvdb/EpisodeParser.h \
-    src/scrapers/tv_show/thetvdb/Search.h \
-    src/scrapers/tv_show/thetvdb/ShowLoader.h \
-    src/scrapers/tv_show/thetvdb/ShowParser.h \
+    src/scrapers/tv_show/TvScraper.h \
+    src/scrapers/tv_show/ShowMerger.h \
+    src/scrapers/tv_show/empty/EmptyTvScraper.h \
+    src/scrapers/tv_show/custom/CustomTvScraper.h \
+    src/scrapers/tv_show/custom/CustomTvScraperConfig.h \
+    src/scrapers/tv_show/custom/CustomSeasonScrapeJob.h \
+    src/scrapers/tv_show/custom/CustomEpisodeScrapeJob.h \
+    src/scrapers/tv_show/custom/CustomShowScrapeJob.h \
+    src/scrapers/tv_show/imdb/ImdbTv.h \
+    src/scrapers/tv_show/imdb/ImdbTvApi.h \
+    src/scrapers/tv_show/imdb/ImdbTvEpisodeScrapeJob.h \
+    src/scrapers/tv_show/imdb/ImdbTvShowSearchJob.h \
+    src/scrapers/tv_show/imdb/ImdbTvShowParser.h \
+    src/scrapers/tv_show/imdb/ImdbTvShowScrapeJob.h \
+    src/scrapers/tv_show/imdb/ImdbTvSeasonScrapeJob.h \
+    src/scrapers/tv_show/thetvdb/TheTvDb.h \
+    src/scrapers/tv_show/thetvdb/TheTvDbApi.h \
+    src/scrapers/tv_show/thetvdb/TheTvDbEpisodeScrapeJob.h \
+    src/scrapers/tv_show/thetvdb/TheTvDbEpisodeParser.h \
+    src/scrapers/tv_show/thetvdb/TheTvDbEpisodesParser.h \
+    src/scrapers/tv_show/thetvdb/TheTvDbSearchJob.h \
+    src/scrapers/tv_show/thetvdb/TheTvDbShowScrapeJob.h \
+    src/scrapers/tv_show/thetvdb/TheTvDbSeasonScrapeJob.h \
+    src/scrapers/tv_show/thetvdb/TheTvDbShowParser.h \
+    src/scrapers/tv_show/tmdb/TmdbTv.h \
+    src/scrapers/tv_show/tmdb/TmdbTvApi.h \
+    src/scrapers/tv_show/tmdb/TmdbTvEpisodeScrapeJob.h \
+    src/scrapers/tv_show/tmdb/TmdbTvShowSearchJob.h \
+    src/scrapers/tv_show/tmdb/TmdbTvShowParser.h \
+    src/scrapers/tv_show/tmdb/TmdbTvShowScrapeJob.h \
+    src/scrapers/tv_show/tmdb/TmdbTvSeasonScrapeJob.h \
     src/ui/movie_sets/MovieListDialog.h \
     src/ui/movie_sets/SetsWidget.h \
     src/settings/AdvancedSettings.h \
@@ -577,6 +625,7 @@ HEADERS  += Version.h \
     src/ui/settings/NetworkSettingsWidget.h \
     src/ui/settings/ScraperSettingsWidget.h \
     src/ui/settings/TvScraperSettingsWidget.h \
+    src/ui/settings/CustomTvScraperSettingsWidget.h \
     src/ui/settings/TvShowSettingsWidget.h \
     src/ui/small_widgets/AlphabeticalList.h \
     src/ui/small_widgets/Badge.h \
@@ -584,6 +633,7 @@ HEADERS  += Version.h \
     src/ui/small_widgets/FilterWidget.h \
     src/ui/small_widgets/ImageGallery.h \
     src/ui/small_widgets/ImageLabel.h \
+    src/ui/small_widgets/LanguageCombo.h \
     src/ui/small_widgets/LoadingStreamDetails.h \
     src/ui/small_widgets/MediaFlags.h \
     src/ui/small_widgets/MessageLabel.h \
@@ -609,12 +659,12 @@ HEADERS  += Version.h \
     src/scrapers/trailer/TrailerProvider.h \
     src/ui/tv_show/TvShowMultiScrapeDialog.h \
     src/ui/tv_show/TvShowSearch.h \
-    src/ui/tv_show/TvShowSearchEpisode.h \
     src/ui/tv_show/TvShowWidget.h \
     src/ui/tv_show/TvShowWidgetEpisode.h \
     src/ui/tv_show/TvShowWidgetSeason.h \
     src/ui/tv_show/TvShowWidgetTvShow.h \
     src/ui/tv_show/TvTunesDialog.h \
+    src/tv_shows/EpisodeMap.h \
     src/tv_shows/TvShowModel.h \
     src/tv_shows/TvShowProxyModel.h \
     src/tv_shows/model/TvShowModelItem.h \
@@ -622,6 +672,7 @@ HEADERS  += Version.h \
     src/tv_shows/model/TvShowRootModelItem.h \
     src/tv_shows/model/EpisodeModelItem.h \
     src/tv_shows/model/SeasonModelItem.h \
+    src/ui/tv_show/TvShowSearchWidget.h \
     src/tv_shows/TvShowUpdater.h \
     src/tv_shows/TvShowUtils.h \
     src/ui/media_centers/KodiSync.h \
@@ -689,6 +740,7 @@ FORMS    += src/ui/main/MainWindow.ui \
     src/ui/settings/NetworkSettingsWidget.ui \
     src/ui/settings/ScraperSettingsWidget.ui \
     src/ui/settings/TvScraperSettingsWidget.ui \
+    src/ui/settings/CustomTvScraperSettingsWidget.ui \
     src/ui/settings/TvShowSettingsWidget.ui \
     src/ui/small_widgets/FilterWidget.ui \
     src/ui/small_widgets/ImageLabel.ui \
@@ -700,7 +752,7 @@ FORMS    += src/ui/main/MainWindow.ui \
     src/tv_shows/ItemWidgetShow.ui \
     src/ui/tv_show/TvShowMultiScrapeDialog.ui \
     src/ui/tv_show/TvShowSearch.ui \
-    src/ui/tv_show/TvShowSearchEpisode.ui \
+    src/ui/tv_show/TvShowSearchWidget.ui \
     src/ui/tv_show/TvShowWidget.ui \
     src/ui/tv_show/TvShowWidgetEpisode.ui \
     src/ui/tv_show/TvShowWidgetSeason.ui \

@@ -50,7 +50,7 @@ function(enable_warnings warning_target)
       ${warning_target}
       PRIVATE
         -Wall -Wextra -pedantic -Wdocumentation # Warns about doxygen variable
-                                                # name mismatches, etc.
+        -Wno-documentation-deprecated-sync # name mismatches, etc.
     )
 
   else()

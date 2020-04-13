@@ -3,7 +3,8 @@
 #include "globals/Globals.h"
 #include "globals/Helper.h"
 #include "media_centers/MediaCenterInterface.h"
-#include "scrapers/tv_show/TvScraperInterface.h"
+#include "scrapers/tv_show/ShowMerger.h"
+#include "scrapers/tv_show/TvScraper.h"
 #include "settings/Settings.h"
 #include "tv_shows/TvShow.h"
 #include "tv_shows/TvShowUtils.h"
@@ -83,56 +84,60 @@ void TvShowEpisode::setShow(TvShow* show)
  */
 void TvShowEpisode::clear()
 {
-    QSet<ShowScraperInfo> infos;
-    infos << ShowScraperInfo::Certification //
-          << ShowScraperInfo::Rating        //
-          << ShowScraperInfo::Director      //
-          << ShowScraperInfo::Writer        //
-          << ShowScraperInfo::Overview      //
-          << ShowScraperInfo::Network       //
-          << ShowScraperInfo::FirstAired    //
-          << ShowScraperInfo::Thumbnail     //
-          << ShowScraperInfo::Actors;
+    QSet<EpisodeScraperInfo> infos;
+    infos << EpisodeScraperInfo::Title         //
+          << EpisodeScraperInfo::Certification //
+          << EpisodeScraperInfo::Rating        //
+          << EpisodeScraperInfo::Director      //
+          << EpisodeScraperInfo::Writer        //
+          << EpisodeScraperInfo::Overview      //
+          << EpisodeScraperInfo::Network       //
+          << EpisodeScraperInfo::FirstAired    //
+          << EpisodeScraperInfo::Thumbnail     //
+          << EpisodeScraperInfo::Actors;
     clear(infos);
     m_nfoContent.clear();
 }
 
-void TvShowEpisode::clear(QSet<ShowScraperInfo> infos)
+void TvShowEpisode::clear(const QSet<EpisodeScraperInfo>& infos)
 {
-    if (infos.contains(ShowScraperInfo::Certification)) {
+    if (infos.contains(EpisodeScraperInfo::Title)) {
+        m_title.clear();
+    }
+    if (infos.contains(EpisodeScraperInfo::Certification)) {
         m_certification = Certification::NoCertification;
     }
-    if (infos.contains(ShowScraperInfo::Rating)) {
+    if (infos.contains(EpisodeScraperInfo::Rating)) {
         m_ratings.clear();
     }
-    if (infos.contains(ShowScraperInfo::Director)) {
+    if (infos.contains(EpisodeScraperInfo::Director)) {
         m_directors.clear();
     }
-    if (infos.contains(ShowScraperInfo::Writer)) {
+    if (infos.contains(EpisodeScraperInfo::Writer)) {
         m_writers.clear();
     }
-    if (infos.contains(ShowScraperInfo::Overview)) {
+    if (infos.contains(EpisodeScraperInfo::Overview)) {
         m_overview = "";
     }
-    if (infos.contains(ShowScraperInfo::Network)) {
+    if (infos.contains(EpisodeScraperInfo::Network)) {
         m_network = "";
     }
-    if (infos.contains(ShowScraperInfo::FirstAired)) {
+    if (infos.contains(EpisodeScraperInfo::FirstAired)) {
         m_firstAired = QDate(2000, 02, 30); // invalid date;
     }
-    if (infos.contains(ShowScraperInfo::Thumbnail)) {
+    if (infos.contains(EpisodeScraperInfo::Thumbnail)) {
         m_thumbnail = QUrl();
         m_thumbnailImageChanged = false;
         m_imagesToRemove.removeOne(ImageType::TvShowEpisodeThumb);
     }
-    if (infos.contains(ShowScraperInfo::Actors)) {
+    if (infos.contains(EpisodeScraperInfo::Actors)) {
         m_actors.clear();
     }
 
     m_hasChanged = false;
 }
 
-QSet<ShowScraperInfo> TvShowEpisode::infosToLoad()
+QSet<EpisodeScraperInfo> TvShowEpisode::infosToLoad()
 {
     return m_infosToLoad;
 }
@@ -167,18 +172,6 @@ bool TvShowEpisode::loadData(MediaCenterInterface* mediaCenterInterface, bool re
 }
 
 /**
- * \brief Load data using a scraper
- * \param id ID of the show for the scraper
- * \param tvScraperInterface ScraperInterface to use
- */
-void TvShowEpisode::loadData(TvDbId id, TvScraperInterface* tvScraperInterface, QSet<ShowScraperInfo> infosToLoad)
-{
-    qDebug() << "Entered, id=" << id.toString() << "scraperInterface=" << tvScraperInterface->name();
-    m_infosToLoad = infosToLoad;
-    tvScraperInterface->loadTvShowEpisodeData(id, this, infosToLoad);
-}
-
-/**
  * \brief Tries to load streamdetails from the file
  */
 void TvShowEpisode::loadStreamDetailsFromFile()
@@ -186,14 +179,6 @@ void TvShowEpisode::loadStreamDetailsFromFile()
     m_streamDetails->loadStreamDetails();
     setStreamDetailsLoaded(true);
     setChanged(true);
-}
-
-/**
- * \brief Called from the scraper when loading has finished
- */
-void TvShowEpisode::scraperLoadDone()
-{
-    emit sigLoaded(this);
 }
 
 /**
@@ -215,6 +200,30 @@ bool TvShowEpisode::saveData(MediaCenterInterface* mediaCenterInterface)
     setChanged(false);
     clearImages();
     return saved;
+}
+
+void TvShowEpisode::scrapeData(mediaelch::scraper::TvScraper* scraper,
+    mediaelch::Locale locale,
+    const QString showIdentifier,
+    SeasonOrder order,
+    const QSet<EpisodeScraperInfo>& infosToLoad)
+{
+    using namespace mediaelch;
+    using namespace mediaelch::scraper;
+
+    qInfo() << "[TvShow] Load episode with show id" << showIdentifier << "using scraper" << scraper->meta().name;
+    m_infosToLoad = infosToLoad;
+
+    EpisodeIdentifier identifier(showIdentifier, seasonNumber(), episodeNumber(), order);
+    EpisodeScrapeJob::Config config(identifier, locale, infosToLoad);
+    auto* scrapeJob = scraper->loadEpisode(config);
+    connect(scrapeJob, &scraper::EpisodeScrapeJob::sigFinished, this, [this](scraper::EpisodeScrapeJob* job) {
+        clear(job->config().details);
+        scraper::copyDetailsToEpisode(*this, job->episode(), job->config().details);
+        job->deleteLater();
+        emit sigLoaded(this);
+    });
+    scrapeJob->execute();
 }
 
 /**
