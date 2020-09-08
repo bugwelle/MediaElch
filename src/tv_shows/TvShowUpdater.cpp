@@ -1,9 +1,5 @@
 #include "TvShowUpdater.h"
 
-#include <QBuffer>
-#include <QDebug>
-#include <QNetworkReply>
-
 #include "data/Storage.h"
 #include "globals/Globals.h"
 #include "globals/Manager.h"
@@ -19,6 +15,9 @@
 #include "quazip5/quazip.h"
 #include "quazip5/quazipfile.h"
 #endif
+
+#include <QBuffer>
+#include <QDebug>
 
 using namespace mediaelch;
 

@@ -1,5 +1,5 @@
 add_library(
-  mediaelch_network OBJECT NetworkReplyWatcher.cpp NetworkRequest.cpp
+  mediaelch_network OBJECT NetworkReplyWatcher.cpp NetworkRequest.cpp NetworkManager.cpp
                            WebsiteCache.cpp
 )
 

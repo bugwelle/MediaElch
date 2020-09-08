@@ -3,7 +3,8 @@
 #include "data/Locale.h"
 #include "data/TmdbId.h"
 #include "globals/ScraperInfos.h"
-#include "network/NetworkReplyWatcher.h"
+#include "network/NetworkManager.h"
+#include "network/NetworkRequest.h"
 #include "network/WebsiteCache.h"
 #include "tv_shows/EpisodeNumber.h"
 #include "tv_shows/SeasonNumber.h"
@@ -79,7 +80,7 @@ private:
 
 private:
     const QString m_language;
-    QNetworkAccessManager m_qnam;
+    network::NetworkManager m_network;
     WebsiteCache m_cache;
     TmdbTvApiConfiguration m_config;
     bool m_isInitialized;

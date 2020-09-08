@@ -46,8 +46,7 @@ void TheTvDbApi::sendGetRequest(const Locale& locale, const QUrl& url, TheTvDbAp
     QNetworkRequest request = mediaelch::network::jsonRequestWithDefaults(url);
     addHeadersToRequest(locale, request);
 
-    QNetworkReply* reply(m_qnam.get(request));
-    new NetworkReplyWatcher(this, reply);
+    QNetworkReply* reply = m_network.getWithWatcher(request);
 
     connect(reply, &QNetworkReply::finished, [reply, callback, locale, this]() {
         QString data{"{}"};

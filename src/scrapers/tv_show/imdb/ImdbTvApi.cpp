@@ -39,8 +39,7 @@ void ImdbTvApi::sendGetRequest(const Locale& locale, const QUrl& url, ImdbTvApi:
     QNetworkRequest request = mediaelch::network::requestWithDefaults(url);
     addHeadersToRequest(locale, request);
 
-    QNetworkReply* reply(m_qnam.get(request));
-    new NetworkReplyWatcher(this, reply);
+    QNetworkReply* reply = m_network.getWithWatcher(request);
 
     connect(reply, &QNetworkReply::finished, [reply, callback, locale, this]() {
         QString html;

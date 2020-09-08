@@ -3,7 +3,7 @@
 #include "data/ImdbId.h"
 #include "data/Locale.h"
 #include "globals/ScraperInfos.h"
-#include "network/NetworkReplyWatcher.h"
+#include "network/NetworkManager.h"
 #include "network/WebsiteCache.h"
 #include "tv_shows/SeasonNumber.h"
 #include "tv_shows/SeasonOrder.h"
@@ -60,7 +60,7 @@ private:
 
 private:
     const QString m_language;
-    QNetworkAccessManager m_qnam;
+    mediaelch::network::NetworkManager m_network;
     WebsiteCache m_cache;
 };
 

@@ -3,7 +3,6 @@
 #include "Version.h"
 #include "data/ImdbId.h"
 #include "globals/JsonRequest.h"
-#include "network/NetworkRequest.h"
 #include "tv_shows/TvDbId.h"
 
 #include <QJsonArray>
@@ -24,9 +23,8 @@ void TmdbTvApi::initialize()
 {
     QUrl url(TmdbTvApi::makeApiUrl("/configuration", Locale::English, {}));
     QNetworkRequest request = network::jsonRequestWithDefaults(url);
+    QNetworkReply* const reply = m_network.getWithWatcher(request);
 
-    QNetworkReply* const reply = m_qnam.get(request);
-    new NetworkReplyWatcher(this, reply);
     connect(reply, &QNetworkReply::finished, this, [this, reply]() {
         QString data{"{}"};
         if (reply->error() == QNetworkReply::NoError) {
@@ -67,8 +65,7 @@ void TmdbTvApi::sendGetRequest(const Locale& locale, const QUrl& url, TmdbTvApi:
     }
 
     QNetworkRequest request = mediaelch::network::requestWithDefaults(url);
-    QNetworkReply* reply(m_qnam.get(request));
-    new NetworkReplyWatcher(this, reply);
+    QNetworkReply* reply = m_network.getWithWatcher(request);
 
     connect(reply, &QNetworkReply::finished, [reply, callback, locale, this]() {
         QString data;
