@@ -203,7 +203,7 @@ void AEBN::parseAndAssignInfos(QString html, Movie* movie, QSet<MovieScraperInfo
     rx.setPattern("<span class=\"detailsLink\"><a href=\"([^\"]*)\" class=\"series\">(.*)</a>");
     match = rx.match(html);
     if (infos.contains(MovieScraperInfo::Set) && match.hasMatch()) {
-        MovieSet set;
+        MovieSetDetails set;
         set.name = match.captured(2);
         movie->setSet(set);
     }

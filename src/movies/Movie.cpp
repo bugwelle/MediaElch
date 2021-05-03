@@ -112,7 +112,7 @@ void Movie::clear(QSet<MovieScraperInfo> infos)
         m_originalName = "";
     }
     if (infos.contains(MovieScraperInfo::Set)) {
-        m_set = MovieSet{};
+        m_set = MovieSetDetails{};
     }
     if (infos.contains(MovieScraperInfo::Overview)) {
         m_overview = "";
@@ -404,7 +404,7 @@ TmdbId Movie::tmdbId() const
  * \return Set of the movie
  * \see Movie::setSet
  */
-MovieSet Movie::set() const
+MovieSetDetails Movie::set() const
 {
     return m_set;
 }
@@ -710,7 +710,7 @@ void Movie::setTmdbId(TmdbId tmdbId)
  * \param set Setname of the movie
  * \see Movie::set
  */
-void Movie::setSet(MovieSet set)
+void Movie::setSet(MovieSetDetails set)
 {
     m_set = std::move(set);
     setChanged(true);

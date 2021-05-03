@@ -427,7 +427,7 @@ void TmdbMovie::loadCollectionFinished()
         return;
     }
 
-    MovieSet set;
+    MovieSetDetails set;
     set.tmdbId = TmdbId(parsedJson.value("id").toInt());
     set.name = parsedJson.value("name").toString();
     set.overview = parsedJson.value("overview").toString();
@@ -564,7 +564,7 @@ void TmdbMovie::parseAndAssignInfos(QString json, Movie* movie, QSet<MovieScrape
     }
     if (infos.contains(MovieScraperInfo::Set) && parsedJson.value("belongs_to_collection").isObject()) {
         const auto collection = parsedJson.value("belongs_to_collection").toObject();
-        MovieSet set;
+        MovieSetDetails set;
         set.tmdbId = TmdbId(collection.value("id").toInt());
         set.name = collection.value("name").toString();
         movie->setSet(set);

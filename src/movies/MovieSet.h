@@ -4,8 +4,9 @@
 
 #include <QString>
 
-/// Represents a movie collection (aka. set).
-struct MovieSet
+/// \brief   Represents a movie collection (aka. set).
+/// \details This struct is used in "Movie" and only stores basic meta data.
+struct MovieSetDetails
 {
     /// A collection's TmdbId, e.g. 1241 for Harry Potter.
     /// Used for getting data from TMDb, e.g.

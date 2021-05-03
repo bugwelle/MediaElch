@@ -77,7 +77,7 @@ public:
     QDateTime lastPlayed() const;
     ImdbId imdbId() const;
     TmdbId tmdbId() const;
-    MovieSet set() const;
+    MovieSetDetails set() const;
     bool watched() const;
     int movieId() const;
     bool inSeparateFolder() const;
@@ -121,7 +121,7 @@ public:
     void setLastPlayed(QDateTime lastPlayed);
     void setImdbId(ImdbId imdbId);
     void setTmdbId(TmdbId tmdbId);
-    void setSet(MovieSet set);
+    void setSet(MovieSetDetails set);
     void setUserRating(double rating);
     void setChanged(bool changed);
     void setDownloadsInProgress(bool inProgress);
@@ -198,7 +198,7 @@ private:
     QDateTime m_lastPlayed;
     ImdbId m_imdbId;
     TmdbId m_tmdbId;
-    MovieSet m_set;
+    MovieSetDetails m_set;
     int m_movieId = -1;
     int m_databaseId = -1;
     int m_mediaCenterId = -1;

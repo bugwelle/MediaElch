@@ -146,7 +146,7 @@ TEST_CASE("Movie XML writer for Kodi v18", "[data][movie][kodi][nfo]")
         movie.addGenre("Science Fiction");
         movie.addCountry("United States of America");
 
-        MovieSet set;
+        MovieSetDetails set;
         set.tmdbId = TmdbId(283579);
         set.name = "Divergent Collection";
         set.overview =

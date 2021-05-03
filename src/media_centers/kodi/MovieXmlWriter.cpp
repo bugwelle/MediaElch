@@ -99,7 +99,7 @@ QByteArray MovieXmlWriterGeneric::getMovieXml(bool testMode)
     //   <name>...</name>
     //   <overview>...</overview>
     // </set>
-    MovieSet set = m_movie.set();
+    MovieSetDetails set = m_movie.set();
     if (!set.name.isEmpty()) {
         xml.writeStartElement("set");
         xml.writeTextElement("name", set.name);

@@ -235,7 +235,7 @@ void HotMovies::parseAndAssignInfos(QString html, Movie* movie, QSet<MovieScrape
     rx.setPattern(R"(<a href="https://www.hotmovies.com/series/[^"]*" title=".*" rel="tag">(.*)</a>)");
     match = rx.match(html);
     if (infos.contains(MovieScraperInfo::Set) && match.hasMatch()) {
-        MovieSet set;
+        MovieSetDetails set;
         set.name = match.captured(1);
         movie->setSet(set);
     }

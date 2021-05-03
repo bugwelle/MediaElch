@@ -324,7 +324,7 @@ void SetsWidget::onAddMovie()
         if (movie->set().name == setName) {
             continue;
         }
-        MovieSet set = movie->set();
+        MovieSetDetails set = movie->set();
         set.name = setName;
         movie->setSet(set);
         m_sets[setName].append(movie);
@@ -355,7 +355,7 @@ void SetsWidget::onRemoveMovie()
         m_moviesToSave[movie->set().name].append(movie);
     }
     movie->setSortTitle("");
-    movie->setSet(MovieSet{});
+    movie->setSet(MovieSetDetails{});
     ui->movies->removeRow(ui->movies->currentRow());
 }
 
@@ -536,7 +536,7 @@ void SetsWidget::onRemoveMovieSet()
     ui->sets->removeRow(ui->sets->currentRow());
 
     for (Movie* movie : m_sets[origSetName]) {
-        movie->setSet(MovieSet{});
+        movie->setSet(MovieSetDetails{});
         movie->setSortTitle("");
     }
     m_sets.remove(setName);
@@ -566,7 +566,7 @@ void SetsWidget::onSetNameChanged(QTableWidgetItem* item)
 
     for (Movie* movie : m_sets[origSetName]) {
         m_moviesToSave[newName].append(movie);
-        MovieSet set;
+        MovieSetDetails set;
         set.name = newName;
         movie->setSet(set);
     }

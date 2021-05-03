@@ -218,7 +218,7 @@ void AdultDvdEmpire::parseAndAssignInfos(QString html, Movie* movie, QSet<MovieS
         if (setName.endsWith("\"")) {
             setName.chop(1);
         }
-        MovieSet set;
+        MovieSetDetails set;
         set.name = setName.trimmed();
         movie->setSet(set);
     }

@@ -159,7 +159,7 @@ void MovieXmlReader::movieSet(const QDomElement& movieSetElement)
     // Old Syntax:
     //   <set>Movie Set Name</set>
     //
-    MovieSet set;
+    MovieSetDetails set;
     if (!setNameElements.isEmpty()) {
         set.name = setNameElements.at(0).toElement().text();
     } else {
