@@ -31,6 +31,8 @@ public:
     virtual QImage movieSetBackdrop(QString setName) = 0;
     virtual void saveMovieSetPoster(QString setName, QImage poster) = 0;
     virtual void saveMovieSetBackdrop(QString setName, QImage backdrop) = 0;
+    /// \brief Rename the movie set, i.e. rename backdrop and poster.
+    virtual bool renameMovieSet(const QString& oldSetName, const QString& newSetName) = 0;
 
     // concerts
     virtual bool saveConcert(Concert* concert) = 0;

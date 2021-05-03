@@ -9,21 +9,26 @@
 #include "globals/Manager.h"
 #include "log/Log.h"
 #include "movies/Movie.h"
+#include "movies/MovieSetModel.h"
 #include "ui/movie_sets/MovieListDialog.h"
 #include "ui/notifications/NotificationBox.h"
 
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QtConcurrent>
 
 SetsWidget::SetsWidget(QWidget* parent) : QWidget(parent), ui(new Ui::SetsWidget)
 {
     ui->setupUi(this);
 
-    ui->sets->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-    ui->movies->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-    ui->movies->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    m_model = new mediaelch::MovieSetModel(this);
+
+    ui->sets->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+
     ui->buttonPreviewBackdrop->setEnabled(false);
     ui->buttonPreviewPoster->setEnabled(false);
+
+    ui->sets->setModel(m_model);
 
 #ifndef Q_OS_MAC
     QFont nameFont = ui->setName->font();
@@ -32,8 +37,8 @@ SetsWidget::SetsWidget(QWidget* parent) : QWidget(parent), ui(new Ui::SetsWidget
 #endif
 
     helper::applyStyle(ui->movies);
-    helper::applyStyle(ui->label_13);
-    helper::applyStyle(ui->label_14);
+    helper::applyStyle(ui->lblPoster);
+    helper::applyStyle(ui->lblBackdrop);
     helper::applyStyle(ui->posterResolution);
     helper::applyStyle(ui->backdropResolution);
     helper::applyStyle(ui->groupBox_3);
@@ -44,18 +49,23 @@ SetsWidget::SetsWidget(QWidget* parent) : QWidget(parent), ui(new Ui::SetsWidget
     m_downloadManager = new DownloadManager(this);
 
     // clang-format off
-    connect(ui->sets,                  &QTableWidget::itemSelectionChanged,   this, &SetsWidget::onSetSelected);
-    connect(ui->sets,                  &QTableWidget::itemChanged,            this, &SetsWidget::onSetNameChanged);
-    connect(ui->movies,                &QTableWidget::itemChanged,            this, &SetsWidget::onSortTitleChanged);
-    connect(ui->movies,                &QTableWidget::itemDoubleClicked,      this, &SetsWidget::onJumpToMovie);
-    connect(ui->buttonAddMovie,        &QAbstractButton::clicked,             this, &SetsWidget::onAddMovie);
-    connect(ui->buttonRemoveMovie,     &QAbstractButton::clicked,             this, &SetsWidget::onRemoveMovie);
-    connect(ui->poster,                &MyLabel::clicked,                     this, &SetsWidget::chooseSetPoster);
-    connect(ui->backdrop,              &MyLabel::clicked,                     this, &SetsWidget::chooseSetBackdrop);
-    connect(ui->buttonPreviewPoster,   &QAbstractButton::clicked,             this, &SetsWidget::onPreviewPoster);
-    connect(ui->buttonPreviewBackdrop, &QAbstractButton::clicked,             this, &SetsWidget::onPreviewBackdrop);
-    connect(m_downloadManager,         &DownloadManager::sigDownloadFinished, this, &SetsWidget::onDownloadFinished, static_cast<Qt::ConnectionType>(Qt::QueuedConnection | Qt::UniqueConnection));
+    connect(ui->sets->selectionModel(), &QItemSelectionModel::currentChanged,  this, &SetsWidget::onSetSelected);
+    connect(m_model,                    &QAbstractItemModel::dataChanged,      this, &SetsWidget::onSetDataChanged);
+    connect(ui->movies,                 &QTableWidget::itemChanged,            this, &SetsWidget::onSortTitleChanged);
+    connect(ui->movies,                 &QTableWidget::itemDoubleClicked,      this, &SetsWidget::onJumpToMovie);
+    connect(ui->buttonAddMovie,         &QAbstractButton::clicked,             this, &SetsWidget::onAddMovie);
+    connect(ui->buttonRemoveMovie,      &QAbstractButton::clicked,             this, &SetsWidget::onRemoveMovie);
+    connect(ui->poster,                 &MyLabel::clicked,                     this, &SetsWidget::chooseSetPoster);
+    connect(ui->backdrop,               &MyLabel::clicked,                     this, &SetsWidget::chooseSetBackdrop);
+    connect(ui->buttonPreviewPoster,    &QAbstractButton::clicked,             this, &SetsWidget::showPosterPreview);
+    connect(ui->buttonPreviewBackdrop,  &QAbstractButton::clicked,             this, &SetsWidget::showBackdropPreview);
+    connect(m_downloadManager,          &DownloadManager::sigDownloadFinished, this, &SetsWidget::onDownloadFinished, static_cast<Qt::ConnectionType>(Qt::QueuedConnection | Qt::UniqueConnection));
     // clang-format on
+
+    connect(&m_futureWatcher,
+        &QFutureWatcher<QVector<mediaelch::MovieCollection*>>::finished,
+        this,
+        &SetsWidget::onSetsLoaded);
 
     ui->sets->setContextMenuPolicy(Qt::CustomContextMenu);
     m_tableContextMenu = new QMenu(ui->sets);
@@ -65,124 +75,84 @@ SetsWidget::SetsWidget(QWidget* parent) : QWidget(parent), ui(new Ui::SetsWidget
     m_tableContextMenu->addAction(actionDeleteSet);
     connect(actionAddSet, &QAction::triggered, this, &SetsWidget::onAddMovieSet);
     connect(actionDeleteSet, &QAction::triggered, this, &SetsWidget::onRemoveMovieSet);
-    connect(ui->sets, &QWidget::customContextMenuRequested, this, &SetsWidget::showSetsContextMenu);
+    connect(ui->sets, &QWidget::customContextMenuRequested, this, [this](QPoint point) {
+        m_tableContextMenu->exec(ui->sets->mapToGlobal(point));
+    });
 
-    clear();
-
-    QPixmap pixmap =
-        QPixmap(":/img/placeholders/poster.png")
-            .scaled(QSize(160, 260) * helper::devicePixelRatio(this), Qt::KeepAspectRatio, Qt::SmoothTransformation);
-    helper::setDevicePixelRatio(pixmap, helper::devicePixelRatio(this));
-    ui->poster->setPixmap(pixmap);
-
-    QPixmap pixmap2 =
-        QPixmap(":/img/placeholders/fanart.png")
-            .scaled(QSize(160, 72) * helper::devicePixelRatio(this), Qt::KeepAspectRatio, Qt::SmoothTransformation);
-    helper::setDevicePixelRatio(pixmap2, helper::devicePixelRatio(this));
-    ui->backdrop->setPixmap(pixmap2);
+    clearMovieSetPanel();
+    clearPosterImage();
+    clearBackdropImage();
 }
 
-/**
- * \brief SetsWidget::~SetsWidget
- */
 SetsWidget::~SetsWidget()
 {
     delete ui;
 }
 
-/**
- * \brief Returns the splitter
- * \return The splitter
- */
 QSplitter* SetsWidget::splitter()
 {
     return ui->splitter;
 }
 
-void SetsWidget::showSetsContextMenu(QPoint point)
-{
-    m_tableContextMenu->exec(ui->sets->mapToGlobal(point));
-}
-
-/**
- * \brief Parses list of movie and constructs sets map
- */
 void SetsWidget::loadSets()
 {
-    // Clear m_sets before ui->sets is cleared.  Otherwise MediaElch may access
-    // invalidated Movie* in an event handler of ui->sets
-    m_sets.clear();
-    m_moviesToSave.clear();
-    m_setPosters.clear();
-    m_setBackdrops.clear();
-
-    emit setActionSaveEnabled(false, MainWidgets::MovieSets);
-    clear();
-    ui->buttonPreviewBackdrop->setEnabled(false);
-    ui->buttonPreviewPoster->setEnabled(false);
-    int currentRow =
-        (ui->sets->currentRow() >= 0 && ui->sets->currentRow() < ui->sets->rowCount()) ? ui->sets->currentRow() : 0;
-    ui->sets->clear();
-    ui->sets->setRowCount(0);
-
-    for (Movie* movie : Manager::instance()->movieModel()->movies()) {
-        if (!movie->set().name.isEmpty()) {
-            if (m_sets.contains(movie->set().name)) {
-                m_sets[movie->set().name].append(movie);
-            } else {
-                QVector<Movie*> l;
-                QVector<Movie*> el;
-                l << movie;
-                m_sets.insert(movie->set().name, l);
-                m_moviesToSave.insert(movie->set().name, el);
-                m_setPosters.insert(movie->set().name, QImage());
-                m_setBackdrops.insert(movie->set().name, QImage());
-            }
-        }
-    }
-    for (const QString& set : asConst(m_addedSets)) {
-        if (!set.isEmpty() && !m_sets.contains(set)) {
-            m_sets.insert(set, QVector<Movie*>());
-            m_moviesToSave.insert(set, QVector<Movie*>());
-            m_setPosters.insert(set, QImage());
-            m_setBackdrops.insert(set, QImage());
-        }
-    }
-    QMapIterator<QString, QVector<Movie*>> it(m_sets);
-    while (it.hasNext()) {
-        it.next();
-        int row = ui->sets->rowCount();
-        ui->sets->insertRow(row);
-        ui->sets->setItem(row, 0, new QTableWidgetItem(it.key()));
-        ui->sets->item(row, 0)->setData(Qt::UserRole, it.key());
-    }
-    if (ui->sets->rowCount() > 0 && currentRow < ui->sets->rowCount()) {
-        ui->sets->setCurrentItem(ui->sets->item(currentRow, 0));
-    }
-    emit setActionSaveEnabled(true, MainWidgets::MovieSets);
-}
-
-/**
- * \brief Called when set table selection changes
- * \see SetsWidget::loadSets
- */
-void SetsWidget::onSetSelected()
-{
-    int row = ui->sets->currentRow();
-    qCDebug(generic) << "row=" << row << "rowCount=" << ui->sets->rowCount();
-    if (row < 0 || row >= ui->sets->rowCount()) {
-        clear();
+    using namespace mediaelch;
+    if (m_futureWatcher.isRunning()) {
+        qInfo() << "[MovieSets] Sets are already loading. No reload is performed.";
         return;
     }
 
-    QString setName = ui->sets->item(ui->sets->currentRow(), 0)->text();
-    loadSet(setName);
+    qInfo() << "[MovieSets] Recreating list of movie sets from all movies.";
+    m_reloadTimer.start();
+
+    m_model->reset();
+    resizeMoviesTable();
+
+    emit setActionSaveEnabled(false, MainWidgets::MovieSets);
+    clearMovieSetPanel();
+    ui->buttonPreviewBackdrop->setEnabled(false);
+    ui->buttonPreviewPoster->setEnabled(false);
+
+    QFuture<QVector<MovieCollection*>> future = QtConcurrent::run([this]() {
+        auto movieSets = MovieSetFactory::create(Manager::instance()->movieModel()->movies(), this);
+        return movieSets;
+    });
+    m_futureWatcher.setFuture(future);
 }
 
-/**
- * \brief Clears contents
- */
-void SetsWidget::clear()
+void SetsWidget::onSetsLoaded()
+{
+    int lastSelectedRow = ui->sets->currentIndex().row();
+
+    QVector<mediaelch::MovieCollection*> sets = m_futureWatcher.result();
+    m_model->addMovieSets(sets);
+
+    if (ui->sets->model()->rowCount() > 0 && lastSelectedRow > 0 && lastSelectedRow < ui->sets->model()->rowCount()) {
+        const QModelIndex lastIndex = ui->sets->model()->index(lastSelectedRow, 0, {});
+        ui->sets->setCurrentIndex(lastIndex);
+
+    } else if (ui->sets->model()->rowCount() > 0) {
+        const QModelIndex index = ui->sets->model()->index(0, 0, {});
+        ui->sets->setCurrentIndex(index);
+    }
+
+    qInfo() << "[MovieSets] Reloading movie sets took" << m_reloadTimer.elapsed() << "ms";
+    m_reloadTimer.invalidate();
+
+    emit setActionSaveEnabled(true, MainWidgets::MovieSets);
+}
+
+void SetsWidget::onSetSelected(const QModelIndex& current, const QModelIndex& previous)
+{
+    Q_UNUSED(previous)
+
+    if (current.isValid()) {
+        loadSet(current);
+    }
+    // Index may be invalid if movie set model was resetted.
+}
+
+void SetsWidget::clearMovieSetPanel()
 {
     ui->setName->clear();
     ui->movies->clearContents();
@@ -191,23 +161,32 @@ void SetsWidget::clear()
     ui->posterResolution->clear();
     m_currentBackdrop = QImage();
     m_currentPoster = QImage();
-    m_addedSets.clear();
 }
 
 /**
  * \brief Fills the widget with set data
  * \param set Name of the set
  */
-void SetsWidget::loadSet(QString set)
+void SetsWidget::loadSet(const QModelIndex& index)
 {
-    qCDebug(generic) << "Entered, set=" << set;
-    clear();
-    ui->setName->setText(set);
+    using namespace mediaelch;
+
+    clearMovieSetPanel();
+
+    ui->setName->setText(index.data(Qt::DisplayRole).toString());
     ui->buttonPreviewBackdrop->setEnabled(false);
     ui->buttonPreviewPoster->setEnabled(false);
     ui->movies->blockSignals(true);
 
-    for (Movie* movie : m_sets[set]) {
+    const QString set = index.data(Qt::DisplayRole).toString();
+
+    auto* movieSet = index.data(MovieSetModel::CollectionPointerRole).value<MovieCollection*>();
+    Q_ASSERT(movieSet != nullptr);
+
+    qDebug() << "[MovieSets] Loading set:" << set;
+
+    const QVector<Movie*> movies = index.data(mediaelch::MovieSetModel::MovieListRole).value<QVector<Movie*>>();
+    for (Movie* movie : movies) {
         int row = ui->movies->rowCount();
         ui->movies->insertRow(row);
         ui->movies->setItem(row, 0, new QTableWidgetItem(movie->name()));
@@ -215,10 +194,13 @@ void SetsWidget::loadSet(QString set)
         ui->movies->item(row, 0)->setData(Qt::UserRole, QVariant::fromValue(movie));
         ui->movies->setItem(row, 1, new QTableWidgetItem(movie->sortTitle()));
     }
+
     ui->movies->sortByColumn(1, Qt::AscendingOrder);
 
-    if (!m_setPosters[set].isNull()) {
-        QImage poster = m_setPosters[set];
+    MediaCenterInterface& mediaCenter = *Manager::instance()->mediaCenterInterface();
+
+    const QImage& poster = movieSet->hasPoster() ? movieSet->poster() : movieSet->posterFromMediaCenter(mediaCenter);
+    if (!poster.isNull()) {
         QPixmap pixmap = QPixmap::fromImage(poster).scaled(
             QSize(200, 300) * helper::devicePixelRatio(this), Qt::KeepAspectRatio, Qt::SmoothTransformation);
         helper::setDevicePixelRatio(pixmap, helper::devicePixelRatio(this));
@@ -226,59 +208,56 @@ void SetsWidget::loadSet(QString set)
         ui->posterResolution->setText(QString("%1x%2").arg(poster.width()).arg(poster.height()));
         ui->buttonPreviewPoster->setEnabled(true);
         m_currentPoster = poster;
-    } else if (!Manager::instance()->mediaCenterInterface()->movieSetPoster(set).isNull()) {
-        QImage poster = Manager::instance()->mediaCenterInterface()->movieSetPoster(set);
-        QPixmap pixmap = QPixmap::fromImage(poster).scaled(
-            QSize(200, 300) * helper::devicePixelRatio(this), Qt::KeepAspectRatio, Qt::SmoothTransformation);
-        helper::setDevicePixelRatio(pixmap, helper::devicePixelRatio(this));
-        ui->poster->setPixmap(pixmap);
-        ui->posterResolution->setText(QString("%1x%2").arg(poster.width()).arg(poster.height()));
-        ui->buttonPreviewPoster->setEnabled(true);
-        m_currentPoster = poster;
+
     } else {
-        QPixmap pixmap =
-            QPixmap(":/img/placeholders/poster.png")
-                .scaled(
-                    QSize(120, 120) * helper::devicePixelRatio(this), Qt::KeepAspectRatio, Qt::SmoothTransformation);
-        helper::setDevicePixelRatio(pixmap, helper::devicePixelRatio(this));
-        ui->poster->setPixmap(pixmap);
+        clearPosterImage();
         ui->buttonPreviewPoster->setEnabled(false);
     }
 
-    if (!m_setBackdrops[set].isNull()) {
-        QImage backdrop = m_setBackdrops[set];
+    const QImage& backdrop =
+        movieSet->hasBackdrop() ? movieSet->backdrop() : movieSet->backdropFromMediaCenter(mediaCenter);
+    if (!backdrop.isNull()) {
         QPixmap pixmap = QPixmap::fromImage(backdrop).scaled(
             QSize(200, 112) * helper::devicePixelRatio(this), Qt::KeepAspectRatio, Qt::SmoothTransformation);
         helper::setDevicePixelRatio(pixmap, helper::devicePixelRatio(this));
         ui->backdrop->setPixmap(pixmap);
-        ui->backdropResolution->setText(QString("%1x%2").arg(backdrop.width()).arg(backdrop.height()));
+        ui->backdropResolution->setText(QStringLiteral("%1x%2").arg(backdrop.width()).arg(backdrop.height()));
         ui->buttonPreviewBackdrop->setEnabled(true);
         m_currentBackdrop = backdrop;
-    } else if (!Manager::instance()->mediaCenterInterface()->movieSetBackdrop(set).isNull()) {
-        QImage backdrop = Manager::instance()->mediaCenterInterface()->movieSetBackdrop(set);
-        QPixmap pixmap = QPixmap::fromImage(backdrop).scaled(
-            QSize(200, 112) * helper::devicePixelRatio(this), Qt::KeepAspectRatio, Qt::SmoothTransformation);
-        helper::setDevicePixelRatio(pixmap, helper::devicePixelRatio(this));
-        ui->backdrop->setPixmap(pixmap);
-        ui->backdropResolution->setText(QString("%1x%2").arg(backdrop.width()).arg(backdrop.height()));
-        ui->buttonPreviewBackdrop->setEnabled(true);
-        m_currentBackdrop = backdrop;
+
     } else {
-        QPixmap pixmap =
-            QPixmap(":/img/placeholders/fanart.png")
-                .scaled(QSize(96, 96) * helper::devicePixelRatio(this), Qt::KeepAspectRatio, Qt::SmoothTransformation);
-        helper::setDevicePixelRatio(pixmap, helper::devicePixelRatio(this));
-        ui->backdrop->setPixmap(pixmap);
+        clearBackdropImage();
         ui->buttonPreviewBackdrop->setEnabled(false);
     }
+
     ui->movies->blockSignals(false);
 }
 
-/**
- * \brief Called when an item in the movies table was changed
- *        Updates movies sorttitle and reorders the table
- * \param item changed item
- */
+void SetsWidget::resizeMoviesTable()
+{
+    // We need to update the size here, as the widget isn't fully constructed
+    // in the constructor (window size may have changed).
+    ui->movies->horizontalHeader()->resizeSections(QHeaderView::QHeaderView::Stretch);
+}
+
+void SetsWidget::clearPosterImage()
+{
+    QPixmap pixmap =
+        QPixmap(":/img/placeholders/poster.png")
+            .scaled(QSize(160, 260) * helper::devicePixelRatio(this), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    helper::setDevicePixelRatio(pixmap, helper::devicePixelRatio(this));
+    ui->poster->setPixmap(pixmap);
+}
+
+void SetsWidget::clearBackdropImage()
+{
+    QPixmap pixmap =
+        QPixmap(":/img/placeholders/fanart.png")
+            .scaled(QSize(160, 72) * helper::devicePixelRatio(this), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    helper::setDevicePixelRatio(pixmap, helper::devicePixelRatio(this));
+    ui->backdrop->setPixmap(pixmap);
+}
+
 void SetsWidget::onSortTitleChanged(QTableWidgetItem* item)
 {
     qCDebug(generic) << "Entered, item->row=" << item->row() << "rowCount=" << ui->movies->rowCount();
@@ -289,87 +268,76 @@ void SetsWidget::onSortTitleChanged(QTableWidgetItem* item)
     auto* movie = ui->movies->item(item->row(), 0)->data(Qt::UserRole).value<Movie*>();
     movie->setSortTitle(item->text());
     ui->movies->sortByColumn(1, Qt::AscendingOrder);
-    if (!m_moviesToSave[movie->set().name].contains(movie)) {
-        m_moviesToSave[movie->set().name].append(movie);
+
+    auto* set = m_model->indexForSet(movie->set().name)
+                    .data(mediaelch::MovieSetModel::CollectionPointerRole)
+                    .value<mediaelch::MovieCollection*>();
+    if (set != nullptr) {
+        set->setChanged();
     }
 }
 
-/**
- * \brief Execs the MovieListDialog and (if accepted) adds a movie to the movies table,
- *        sets the setname in the movie and adds the movie to m_sets
- */
 void SetsWidget::onAddMovie()
 {
-    if (ui->sets->currentRow() < 0 || ui->sets->currentRow() >= ui->sets->rowCount()) {
-        qCDebug(generic) << "[SetsWidget] Invalid current row";
+    const int currentRow = ui->sets->currentIndex().row();
+
+    if (currentRow < 0 || currentRow > m_model->rowCount()) {
         return;
     }
 
     auto* listDialog = new MovieListDialog(this);
     const int exitCode = listDialog->exec();
-    QVector<Movie*> movies = listDialog->selectedMovies();
+    const QVector<Movie*> movies = listDialog->selectedMovies();
     listDialog->deleteLater();
 
     if (exitCode != QDialog::Accepted || movies.isEmpty()) {
         return;
     }
 
-    const int row = ui->sets->currentRow();
-    if (row < 0 || row >= ui->sets->rowCount()) {
-        return;
-    }
-
-    QString setName = ui->sets->item(ui->sets->currentRow(), 0)->text();
+    QString setName = ui->sets->currentIndex().data(Qt::DisplayRole).toString();
     for (Movie* movie : asConst(movies)) {
         if (movie->set().name == setName) {
             continue;
         }
+
         MovieSetDetails set = movie->set();
         set.name = setName;
         movie->setSet(set);
-        m_sets[setName].append(movie);
-        if (!m_moviesToSave[setName].contains(movie)) {
-            m_moviesToSave[setName].append(movie);
-        }
+
+        m_model->addMovie(*movie);
     }
-    loadSet(setName);
+
+    loadSet(m_model->indexForSet(setName));
 }
 
-/**
- * \brief Removes a movie from the movies table, sets and empty sorttitle and set for the movie
- *        and removes it from m_sets
- */
 void SetsWidget::onRemoveMovie()
 {
-    if (ui->sets->currentRow() < 0 || ui->sets->currentRow() >= ui->sets->rowCount()) {
-        qCDebug(generic) << "Invalid current row in sets";
+    const int setRow = ui->sets->currentIndex().row();
+    if (setRow < 0 || setRow >= m_model->rowCount()) {
+        qCWarning(generic) << "[SetsWidget] Invalid current row in sets: Can't remove movie from set";
         return;
     }
+
     if (ui->movies->currentRow() < 0 || ui->movies->currentRow() >= ui->movies->rowCount()) {
-        qCDebug(generic) << "Invalid current row in movies";
+        qCWarning(generic) << "[SetsWidget] Invalid current row in movies: Can't remove movie from set";
         return;
     }
+
     auto* movie = ui->movies->item(ui->movies->currentRow(), 0)->data(Qt::UserRole).value<Movie*>();
-    m_sets[movie->set().name].removeOne(movie);
-    if (!m_moviesToSave[movie->set().name].contains(movie)) {
-        m_moviesToSave[movie->set().name].append(movie);
-    }
-    movie->setSortTitle("");
-    movie->setSet(MovieSetDetails{});
+
+    m_model->removeMovieFromSet(*movie);
     ui->movies->removeRow(ui->movies->currentRow());
 }
 
-/**
- * \brief Shows QFileDialog to choose an image, if successful sets the poster
- */
 void SetsWidget::chooseSetPoster()
 {
-    if (ui->sets->currentRow() < 0 || ui->sets->currentRow() >= ui->sets->rowCount()) {
-        qCDebug(generic) << "[SetsWidget] Invalid current row in sets";
+    const int row = ui->sets->currentIndex().row();
+    if (row < 0 || row >= m_model->rowCount()) {
+        qCWarning(generic) << "[SetsWidget] Invalid current row in sets";
         return;
     }
 
-    QString setName = ui->sets->item(ui->sets->currentRow(), 0)->data(Qt::UserRole).toString();
+    QString setName = ui->sets->currentIndex().data(Qt::DisplayRole).toString();
     auto* movie = new Movie(QStringList());
     movie->setName(setName);
 
@@ -393,17 +361,15 @@ void SetsWidget::chooseSetPoster()
     }
 }
 
-/**
- * \brief Shows QFileDialog to choose an image, if successful sets the backdrop
- */
 void SetsWidget::chooseSetBackdrop()
 {
-    if (ui->sets->currentRow() < 0 || ui->sets->currentRow() >= ui->sets->rowCount()) {
-        qCDebug(generic) << "Invalid current row in sets";
+    const int row = ui->sets->currentIndex().row();
+    if (row < 0 || row >= m_model->rowCount()) {
+        qCWarning(generic) << "[SetsWidget] Invalid current row in sets";
         return;
     }
 
-    QString setName = ui->sets->item(ui->sets->currentRow(), 0)->data(Qt::UserRole).toString();
+    QString setName = ui->sets->currentIndex().data(Qt::DisplayRole).toString();
     auto* movie = new Movie(QStringList());
     movie->setName(setName);
 
@@ -427,45 +393,25 @@ void SetsWidget::chooseSetBackdrop()
     }
 }
 
-/**
- * \brief Saves changed movies in this set
- */
 void SetsWidget::saveSet()
 {
-    if (ui->sets->currentRow() < 0 || ui->sets->currentRow() >= ui->sets->rowCount()) {
-        qCDebug(generic) << "Invalid current row in sets";
+    const int row = ui->sets->currentIndex().row();
+    if (row < 0 || row >= m_model->rowCount() || !ui->sets->currentIndex().isValid()) {
+        qCWarning(generic) << "[SetsWidget] Invalid current row in sets";
         return;
     }
 
-    QStringList setNames;
-    setNames << ui->sets->item(ui->sets->currentRow(), 0)->data(Qt::UserRole).toString();
-    setNames << ui->sets->item(ui->sets->currentRow(), 0)->text();
-    setNames.removeDuplicates();
+    bool success = m_model->saveSet(ui->sets->currentIndex(), *Manager::instance()->mediaCenterInterface());
 
-    for (const QString& setName : asConst(setNames)) {
-        for (Movie* movie : asConst(m_moviesToSave[setName])) {
-            movie->controller()->saveData(Manager::instance()->mediaCenterInterface());
-        }
-        m_moviesToSave[setName].clear();
-
-        if (!m_setPosters[setName].isNull()) {
-            Manager::instance()->mediaCenterInterface()->saveMovieSetPoster(setName, m_setPosters[setName]);
-            m_setPosters[setName] = QImage();
-        }
-        if (!m_setBackdrops[setName].isNull()) {
-            Manager::instance()->mediaCenterInterface()->saveMovieSetBackdrop(setName, m_setBackdrops[setName]);
-            m_setBackdrops[setName] = QImage();
-        }
+    const QString setName = ui->sets->currentIndex().data(Qt::DisplayRole).toString();
+    if (success) {
+        NotificationBox::instance()->showSuccess(tr("<b>\"%1\"</b> saved").arg(setName));
+    } else {
+        NotificationBox::instance()->showError(tr("<b>\"%1\"</b> not saved").arg(setName));
     }
-
-    NotificationBox::instance()->showSuccess(
-        tr("<b>\"%1\"</b> Saved").arg(ui->sets->item(ui->sets->currentRow(), 0)->text()));
 }
 
-/**
- * \brief Shows a full preview of the current backdrop
- */
-void SetsWidget::onPreviewBackdrop()
+void SetsWidget::showBackdropPreview()
 {
     auto* dialog = new ImagePreviewDialog(this);
     dialog->setImage(QPixmap::fromImage(m_currentBackdrop));
@@ -473,10 +419,7 @@ void SetsWidget::onPreviewBackdrop()
     dialog->deleteLater();
 }
 
-/**
- * \brief Shows a full preview of the current poster
- */
-void SetsWidget::onPreviewPoster()
+void SetsWidget::showPosterPreview()
 {
     auto* dialog = new ImagePreviewDialog(this);
     dialog->setImage(QPixmap::fromImage(m_currentPoster));
@@ -487,136 +430,64 @@ void SetsWidget::onPreviewPoster()
 void SetsWidget::onAddMovieSet()
 {
     m_tableContextMenu->close();
-    QString setName = tr("New Movie Set");
-    int adder = -1;
-    bool setExists = false;
-    do {
-        adder++;
-        setExists = false;
-        for (int i = 0, n = ui->sets->rowCount(); i < n; ++i) {
-            if ((adder == 0 && ui->sets->item(i, 0)->text() == setName)
-                || (adder > 0 && ui->sets->item(i, 0)->text() == QString("%1 %2").arg(setName).arg(adder))) {
-                setExists = true;
-                break;
-            }
-        }
-    } while (setExists);
-
-    if (adder > 0) {
-        setName.append(QString(" %1").arg(adder));
-    }
-
-    m_addedSets << setName;
-
-    QVector<Movie*> l;
-    QVector<Movie*> el;
-    m_sets.insert(setName, l);
-    m_moviesToSave.insert(setName, el);
-    m_setPosters.insert(setName, QImage());
-    m_setBackdrops.insert(setName, QImage());
-
-    ui->sets->blockSignals(true);
-    int row = ui->sets->rowCount();
-    ui->sets->insertRow(row);
-    ui->sets->setItem(row, 0, new QTableWidgetItem(setName));
-    ui->sets->item(row, 0)->setData(Qt::UserRole, setName);
-    ui->sets->blockSignals(false);
+    m_model->addEmptyMovieSet();
 }
 
 void SetsWidget::onRemoveMovieSet()
 {
-    m_tableContextMenu->close();
-    if (ui->sets->currentRow() < 0 || ui->sets->currentRow() >= ui->sets->rowCount()) {
-        qCWarning(generic) << "Invalid row" << ui->sets->currentRow();
+    const int row = ui->sets->currentIndex().row();
+    if (row < 0 || row >= m_model->rowCount()) {
+        qCWarning(generic) << "[SetsWidget] Invalid current row in sets";
         return;
     }
 
-    QString setName = ui->sets->item(ui->sets->currentRow(), 0)->text();
-    QString origSetName = ui->sets->item(ui->sets->currentRow(), 0)->data(Qt::UserRole).toString();
-    ui->sets->removeRow(ui->sets->currentRow());
-
-    for (Movie* movie : m_sets[origSetName]) {
-        movie->setSet(MovieSetDetails{});
-        movie->setSortTitle("");
-    }
-    m_sets.remove(setName);
-    m_setPosters.remove(setName);
-    m_setBackdrops.remove(setName);
-    m_addedSets.removeOne(setName);
+    QString setName = ui->sets->currentIndex().data(Qt::DisplayRole).toString();
+    qCInfo(generic) << "[SetsWidget] Removing set:" << setName;
+    m_model->removeRows(row, 1);
 }
 
-void SetsWidget::onSetNameChanged(QTableWidgetItem* item)
+void SetsWidget::onSetDataChanged(const QModelIndex& item)
 {
-    QString newName = item->text();
-    QString origSetName = item->data(Qt::UserRole).toString();
-    if (newName == origSetName) {
-        return;
-    }
-
-    for (int i = 0, n = ui->sets->rowCount(); i < n; ++i) {
-        if (i != item->row() && ui->sets->item(i, 0)->text() == newName) {
-            ui->sets->removeRow(i);
-            break;
+    if (item == ui->sets->selectionModel()->currentIndex()) {
+        QString newSetName = item.data(Qt::DisplayRole).toString();
+        if (newSetName != ui->setName->text()) {
+            ui->setName->setText(newSetName);
         }
     }
-
-    if (!m_moviesToSave.contains(newName)) {
-        m_moviesToSave.insert(newName, QVector<Movie*>());
-    }
-
-    for (Movie* movie : m_sets[origSetName]) {
-        m_moviesToSave[newName].append(movie);
-        MovieSetDetails set;
-        set.name = newName;
-        movie->setSet(set);
-    }
-
-    m_moviesToSave[origSetName].clear();
-
-    if (!m_sets.contains(newName)) {
-        m_sets[newName].append(QVector<Movie*>());
-    }
-
-    m_sets[newName].append(m_sets[origSetName]);
-    m_sets.remove(origSetName);
-
-    if (!m_setPosters.contains(newName)) {
-        m_setPosters.insert(newName, QImage());
-    }
-    if (!m_setBackdrops.contains(newName)) {
-        m_setBackdrops.insert(newName, QImage());
-    }
-
-    if (m_addedSets.contains(newName)) {
-        m_addedSets.removeOne(origSetName);
-        if (!m_addedSets.contains(newName)) {
-            m_addedSets.append(newName);
-        }
-    }
-
-    loadSet(newName);
 }
 
 void SetsWidget::onDownloadFinished(DownloadManagerElement elem)
 {
+    using namespace mediaelch;
     QString setName = elem.movie->name();
-    if (elem.imageType == ImageType::MovieSetPoster) {
-        if (m_setPosters.contains(setName)) {
-            m_setPosters[setName] = QImage::fromData(elem.data);
+    QModelIndex index = m_model->indexForSet(setName);
+
+    // Only update the current view, if this download elements belongs
+    // to the currently shown movie set.
+    const auto updateIfCurrentSet = [this, &setName]() {
+        if (ui->sets->currentIndex().data(Qt::DisplayRole).toString() == setName) {
+            loadSet(ui->sets->currentIndex());
         }
-        if (ui->sets->currentRow() >= 0 && ui->sets->currentRow() < ui->sets->rowCount()
-            && ui->sets->item(ui->sets->currentRow(), 0)->text() == setName) {
-            loadSet(setName);
-        }
-    } else if (elem.imageType == ImageType::MovieSetBackdrop) {
-        if (m_setBackdrops.contains(setName)) {
-            m_setBackdrops[setName] = QImage::fromData(elem.data);
-        }
-        if (ui->sets->currentRow() >= 0 && ui->sets->currentRow() < ui->sets->rowCount()
-            && ui->sets->item(ui->sets->currentRow(), 0)->text() == setName) {
-            loadSet(setName);
+    };
+
+    if (index.isValid()) {
+        auto* set = index.data(MovieSetModel::CollectionPointerRole).value<MovieCollection*>();
+        Q_ASSERT(set != nullptr);
+
+        if (elem.imageType == ImageType::MovieSetPoster) {
+            set->setPoster(QImage::fromData(elem.data));
+            // TODO: Maybe through signal in movie set?
+            m_model->dataChanged(index, index, {});
+            updateIfCurrentSet();
+
+        } else if (elem.imageType == ImageType::MovieSetBackdrop) {
+            set->setBackdrop(QImage::fromData(elem.data));
+            // TODO: Maybe through signal in movie set?
+            m_model->dataChanged(index, index, {});
+            updateIfCurrentSet();
         }
     }
+
     delete elem.movie;
 }
 

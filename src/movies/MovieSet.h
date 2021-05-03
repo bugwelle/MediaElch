@@ -2,7 +2,10 @@
 
 #include "data/TmdbId.h"
 
+#include <QPointer>
 #include <QString>
+
+class Movie;
 
 /// \brief   Represents a movie collection (aka. set).
 /// \details This struct is used in "Movie" and only stores basic meta data.
@@ -16,3 +19,5 @@ struct MovieSetDetails
     QString name;
     QString overview;
 };
+
+Q_DECLARE_METATYPE(MovieSetDetails*)

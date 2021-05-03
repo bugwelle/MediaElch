@@ -422,7 +422,7 @@ void MainWindow::onActionSearch()
  */
 void MainWindow::onActionSave()
 {
-    qCDebug(generic) << "Entered, currentIndex=" << ui->stackedWidget->currentIndex();
+    qCDebug(generic) << "[MainWindow] Pressed 'save' for:" << ui->stackedWidget->currentIndex();
 
     switch (currentTab()) {
     case MainWidgets::Movies: ui->movieWidget->saveInformation(); break;
@@ -802,56 +802,64 @@ void MainWindow::onMenu(QToolButton* button)
     int page = button->property("page").toInt();
     ui->stackedWidget->setCurrentIndex(page);
 
-    ui->navbar->setActionReloadEnabled(page == 0 || page == 1 || page == 3 || page == 6 || page == 7);
     MainWidgets widget = MainWidgets::Movies;
     switch (page) {
     case 0:
         // Movies
+        ui->navbar->setActionReloadEnabled(true);
         ui->navbar->setReloadToolTip(
             tr("Reload all Movies (%1)").arg(QKeySequence(QKeySequence::Refresh).toString(QKeySequence::NativeText)));
         widget = MainWidgets::Movies;
         break;
     case 1:
         // Tv Shows
+        ui->navbar->setActionReloadEnabled(true);
         ui->navbar->setReloadToolTip(
             tr("Reload all TV Shows (%1)").arg(QKeySequence(QKeySequence::Refresh).toString(QKeySequence::NativeText)));
         widget = MainWidgets::TvShows;
         break;
     case 2:
         // Movie Sets
+        ui->navbar->setActionReloadEnabled(false);
         widget = MainWidgets::MovieSets;
         ui->setsWidget->loadSets();
         break;
     case 3:
         // Concerts
+        ui->navbar->setActionReloadEnabled(true);
         ui->navbar->setReloadToolTip(
             tr("Reload all Concerts (%1)").arg(QKeySequence(QKeySequence::Refresh).toString(QKeySequence::NativeText)));
         widget = MainWidgets::Concerts;
         break;
     case 4:
         // Genres
+        ui->navbar->setActionReloadEnabled(false);
         widget = MainWidgets::Genres;
         ui->genreWidget->loadGenres();
         break;
     case 5:
         // Certification
+        ui->navbar->setActionReloadEnabled(false);
         widget = MainWidgets::Certifications;
         ui->certificationWidget->loadCertifications();
         break;
     case 6:
         // Import
+        ui->navbar->setActionReloadEnabled(true);
         widget = MainWidgets::Downloads;
         ui->navbar->setReloadToolTip(tr("Reload all Downloads (%1)")
                                          .arg(QKeySequence(QKeySequence::Refresh).toString(QKeySequence::NativeText)));
         break;
     case 7:
         // Music
+        ui->navbar->setActionReloadEnabled(true);
         ui->navbar->setReloadToolTip(
             tr("Reload Music (%1)").arg(QKeySequence(QKeySequence::Refresh).toString(QKeySequence::NativeText)));
         widget = MainWidgets::Music;
         break;
     case 8:
         // Duplicates
+        ui->navbar->setActionReloadEnabled(false);
         widget = MainWidgets::Duplicates;
         break;
     default: qCWarning(generic) << "Unhandled page in main window." << page; break;

@@ -12,7 +12,7 @@ add_subdirectory(settings)
 
 add_library(
   mediaelch_ui OBJECT
-  movie_sets/MovieListDialog.cpp movie_sets/SetsWidget.cpp
+  movie_sets/MovieListDialog.cpp movie_sets/SetsWidget.cpp movie_sets/MovieSetsListView.cpp
   tv_show/TvShowFilesWidget.cpp media_centers/KodiSync.cpp
   support/SupportDialog.cpp
 )

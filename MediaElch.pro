@@ -229,6 +229,7 @@ SOURCES += src/main.cpp \
     src/media_centers/kodi/TvShowXmlWriter.cpp \
     src/media_centers/KodiVersion.cpp \
     src/media_centers/KodiXml.cpp \
+    src/movies/MovieSetModel.cpp \
     src/ui/movies/CertificationWidget.cpp \
     src/ui/movies/GenreWidget.cpp \
     src/movies/MovieController.cpp \
@@ -579,6 +580,7 @@ HEADERS  += Version.h \
     src/media_centers/KodiVersion.h \
     src/media_centers/KodiVersion.h \
     src/media_centers/KodiXml.h \
+    src/movies/MovieSetModel.h \
     src/ui/movies/CertificationWidget.h \
     src/ui/movies/GenreWidget.h \
     src/movies/MovieController.h \

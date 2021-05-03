@@ -36,6 +36,7 @@ public:
     QImage movieSetBackdrop(QString setName) override;
     void saveMovieSetPoster(QString setName, QImage poster) override;
     void saveMovieSetBackdrop(QString setName, QImage backdrop) override;
+    bool renameMovieSet(const QString& oldSetName, const QString& newSetName) override;
 
     // concerts
     bool saveConcert(Concert* concert) override;

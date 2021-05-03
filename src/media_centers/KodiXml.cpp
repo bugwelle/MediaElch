@@ -1162,6 +1162,69 @@ void KodiXml::saveMovieSetBackdrop(QString setName, QImage backdrop)
     }
 }
 
+bool KodiXml::renameMovieSet(const QString& oldSetName, const QString& newSetName)
+{
+    if (oldSetName == newSetName) {
+        return true;
+    }
+
+    struct FileName
+    {
+        QString oldName;
+        QString newName;
+        bool isRenamePossible() { return !oldName.isEmpty() && !newName.isEmpty(); }
+        bool rename()
+        {
+            if (!isRenamePossible()) {
+                return false;
+            }
+            QFile file(oldName);
+            if (file.rename(newName)) {
+                return true;
+            }
+            return false;
+        }
+    };
+
+    const auto renameMovieSetImage = [this, &oldSetName, &newSetName](DataFileType type) -> bool {
+        FileName imageFileName;
+
+        const auto& dataFiles = Settings::instance()->dataFiles(type);
+        for (const DataFile& dataFile : dataFiles) {
+            QString fileName = movieSetFileName(oldSetName, dataFile);
+            QFileInfo fi(fileName);
+            if (fi.exists()) {
+                imageFileName.oldName = fileName;
+                break;
+            }
+        }
+        for (const DataFile& dataFile : dataFiles) {
+            QString fileName = movieSetFileName(newSetName, dataFile);
+            QFileInfo fi(fileName);
+            if (fi.exists()) {
+                imageFileName.newName = fileName;
+                break;
+            }
+        }
+        bool success = imageFileName.rename();
+        return success;
+    };
+
+    { // Backdrop
+        bool success = renameMovieSetImage(DataFileType::MovieSetBackdrop);
+        if (!success) {
+            return false;
+        }
+    }
+    { // Poster
+        bool success = renameMovieSetImage(DataFileType::MovieSetPoster);
+        if (!success) {
+            return false;
+        }
+    }
+    return true;
+}
+
 bool KodiXml::saveFile(QString filename, QByteArray data)
 {
     QDir saveFileDir = QFileInfo(filename).dir();
@@ -1233,6 +1296,7 @@ QString KodiXml::movieSetFileName(QString setName, const DataFile& dataFile)
     }
     if (Settings::instance()->movieSetArtworkType() == MovieSetArtworkType::ArtworkNextToMovies) {
         for (Movie* movie : Manager::instance()->movieModel()->movies()) {
+            // TODO HIER
             if (movie->set().name == setName && !movie->files().isEmpty()) {
                 QFileInfo fi(movie->files().first().toString());
                 QDir dir = fi.dir();
