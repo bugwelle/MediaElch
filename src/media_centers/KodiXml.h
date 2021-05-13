@@ -30,6 +30,7 @@ public:
     // movies
     bool saveMovie(Movie* movie) override;
     bool loadMovie(Movie* movie, QString initialNfoContent = "") override;
+
     // movie images (e.g. posters)
     QImage movieSetPoster(QString setName) override;
     QImage movieSetBackdrop(QString setName) override;
@@ -118,7 +119,7 @@ private:
     bool saveFile(QString filename, QByteArray data);
     mediaelch::DirectoryPath getPath(const Movie* movie);
     mediaelch::DirectoryPath getPath(const Concert* concert);
-    QString movieSetFileName(QString setName, DataFile* dataFile);
+    QString movieSetFileName(QString setName, const DataFile& dataFile);
 
 private:
     mediaelch::KodiVersion m_version;

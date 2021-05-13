@@ -1115,7 +1115,7 @@ QStringList KodiXml::extraFanartNames(Artist* artist)
 QImage KodiXml::movieSetPoster(QString setName)
 {
     for (DataFile dataFile : Settings::instance()->dataFiles(DataFileType::MovieSetPoster)) {
-        QString fileName = movieSetFileName(setName, &dataFile);
+        QString fileName = movieSetFileName(setName, dataFile);
         QFileInfo fi(fileName);
         if (fi.exists()) {
             return QImage(fi.absoluteFilePath());
@@ -1127,7 +1127,7 @@ QImage KodiXml::movieSetPoster(QString setName)
 QImage KodiXml::movieSetBackdrop(QString setName)
 {
     for (DataFile dataFile : Settings::instance()->dataFiles(DataFileType::MovieSetBackdrop)) {
-        QString fileName = movieSetFileName(setName, &dataFile);
+        QString fileName = movieSetFileName(setName, dataFile);
         QFileInfo fi(fileName);
         if (fi.exists()) {
             return QImage(fi.absoluteFilePath());
@@ -1142,7 +1142,7 @@ QImage KodiXml::movieSetBackdrop(QString setName)
 void KodiXml::saveMovieSetPoster(QString setName, QImage poster)
 {
     for (DataFile dataFile : Settings::instance()->dataFiles(DataFileType::MovieSetPoster)) {
-        QString fileName = movieSetFileName(setName, &dataFile);
+        QString fileName = movieSetFileName(setName, dataFile);
         if (!fileName.isEmpty()) {
             poster.save(fileName, "jpg", 100);
         }
@@ -1155,7 +1155,7 @@ void KodiXml::saveMovieSetPoster(QString setName, QImage poster)
 void KodiXml::saveMovieSetBackdrop(QString setName, QImage backdrop)
 {
     for (DataFile dataFile : Settings::instance()->dataFiles(DataFileType::MovieSetBackdrop)) {
-        QString fileName = movieSetFileName(setName, &dataFile);
+        QString fileName = movieSetFileName(setName, dataFile);
         if (!fileName.isEmpty()) {
             backdrop.save(fileName, "jpg", 100);
         }
@@ -1224,11 +1224,11 @@ mediaelch::DirectoryPath KodiXml::getPath(const Concert* concert)
     return mediaelch::DirectoryPath(fi.dir());
 }
 
-QString KodiXml::movieSetFileName(QString setName, DataFile* dataFile)
+QString KodiXml::movieSetFileName(QString setName, const DataFile& dataFile)
 {
     if (Settings::instance()->movieSetArtworkType() == MovieSetArtworkType::SeparateArtworkFolder) {
         QDir dir = Settings::instance()->movieSetArtworkDirectory().dir();
-        QString fileName = dataFile->saveFileName(setName);
+        QString fileName = dataFile.saveFileName(setName);
         return dir.absolutePath() + "/" + fileName;
     }
     if (Settings::instance()->movieSetArtworkType() == MovieSetArtworkType::ArtworkNextToMovies) {
@@ -1242,7 +1242,7 @@ QString KodiXml::movieSetFileName(QString setName, DataFile* dataFile)
                 if (movie->discType() == DiscType::Dvd || movie->discType() == DiscType::BluRay) {
                     dir.cdUp();
                 }
-                return dir.absolutePath() + "/" + dataFile->saveFileName(setName);
+                return dir.absolutePath() + "/" + dataFile.saveFileName(setName);
             }
         }
     }
