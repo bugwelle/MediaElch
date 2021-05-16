@@ -12,6 +12,11 @@
 #include <QLibraryInfo>
 #include <QStandardPaths>
 
+#ifdef ENABLE_SPELLCHECK
+#include <sonnet/spellcheckdecorator.h>
+#include <sonnet/highlighter.h>
+#endif
+
 AboutDialog::AboutDialog(QWidget* parent) : QDialog(parent), ui(new Ui::AboutDialog)
 {
     ui->setupUi(this);
@@ -99,6 +104,18 @@ void AboutDialog::setDeveloperDetails()
     infoStream << "<br>";
 
     ui->txtDetails->setHtml(infos);
+
+    auto* test = new QTextEdit;
+    test->setText(
+        QString::fromLatin1("This is a sample buffer. Whih this thingg will "
+                            "be checkin for misstakes. Whih, Enviroment, govermant. Whih."));
+
+#ifdef ENABLE_SPELLCHECK
+    Sonnet::SpellCheckDecorator* decorator = new Sonnet::SpellCheckDecorator(test);
+    decorator->highlighter()->setCurrentLanguage(QStringLiteral("en_US"));
+    ui->verticalLayout_2->addWidget(test);
+#endif
+
 }
 
 void AboutDialog::copyToClipboard()

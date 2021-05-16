@@ -9,7 +9,8 @@
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
                 "ENABLE_COLOR_OUTPUT" : "ON",
-                "CMAKE_EXPORT_COMPILE_COMMANDS" : "ON"
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "ENABLE_LTO": "ON"
             }
         },
         {
@@ -22,9 +23,11 @@
                 "SANITIZE_ADDRESS": "ON",
                 "ENABLE_COLOR_OUTPUT" : "ON",
                 "CMAKE_EXPORT_COMPILE_COMMANDS" : "ON",
-                "CMAKE_CXX_COMPILER_LAUNCHER": "ccache"
+                "CMAKE_CXX_COMPILER_LAUNCHER": "ccache",
+                "ENABLE_SPELLCHECK": "ON"
             }
         },
+
         {
             "name": "clazy",
             "displayName": "clazy",

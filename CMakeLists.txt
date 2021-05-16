@@ -61,6 +61,7 @@ option(ENABLE_COLOR_OUTPUT     "Force produce ANSI-colored output (GNU/Clang onl
 option(ENABLE_LTO              "Enable link-time-optimization. Increases link time." OFF)
 option(DISABLE_UPDATER         "Disable MediaElch's update check."                   OFF)
 option(USE_EXTERN_QUAZIP       "Build against the system's quazip library."          OFF)
+option(ENABLE_SPELLCHECK       "Enable spellchecking using KDE Sonnet."              OFF)
 # cmake-format: on
 
 find_package(Sanitizers)
@@ -81,6 +82,12 @@ if(ENABLE_LTO)
 endif()
 
 set(LINK_WHAT_YOU_USE ON)
+
+# -----------------------------------------------------------------------------
+# KDE Sonnet is used for spell checking.
+if(ENABLE_SPELLCHECK)
+  find_package(KF5Sonnet)
+endif()
 
 # -----------------------------------------------------------------------------
 # Some defaults for our targets. Currently warnings are enabled and the C++
@@ -112,6 +119,9 @@ function(mediaelch_post_target_defaults target)
   endif()
   if(NOT DISABLE_UPDATER)
     target_compile_definitions(${target} PRIVATE MEDIAELCH_UPDATER)
+  endif()
+  if (ENABLE_SPELLCHECK)
+    target_compile_definitions(${target} PRIVATE ENABLE_SPELLCHECK)
   endif()
 endfunction()
 

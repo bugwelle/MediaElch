@@ -9,6 +9,10 @@ equals(QT_MAJOR_VERSION, 6) {
 contains(CONFIG, USE_EXTERN_QUAZIP) {
     DEFINES += EXTERN_QUAZIP
 }
+contains(CONFIG, spellcheck) {
+    DEFINE += ENABLE_SPELLCHECK
+    LIBS += SonnetCore SonnetUi
+}
 
 !contains(DEFINES, EXTERN_QUAZIP) {
     # using internal 3rd party QUAZIP
