@@ -32,5 +32,10 @@ void TmdbTvSeasonParser::parseEpisodes(TmdbApi& api,
     }
 }
 
+QVector<TmdbId> TmdbTvSeasonParser::parseEpisodeIds(TmdbApi& api, const QJsonDocument& json)
+{
+    // TODO
+}
+
 } // namespace scraper
 } // namespace mediaelch

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "data/TmdbId.h"
+
 #include <QJsonDocument>
 #include <QObject>
 #include <functional>
@@ -28,6 +30,8 @@ public:
         const QJsonDocument& json,
         QObject* parentForEpisodes,
         std::function<void(TvShowEpisode*)> episodeCallback);
+
+    QVector<TmdbId> parseEpisodeIds(TmdbApi& api, const QJsonDocument& json);
 };
 
 } // namespace scraper
