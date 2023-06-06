@@ -1,4 +1,4 @@
-#include "Renamer.h"
+#include "renamer/Renamer.h"
 
 #include "data/movie/Movie.h"
 #include "globals/Helper.h"
@@ -39,6 +39,7 @@ Renamer::Renamer(RenamerConfig renamerConfig, RenamerDialog* dialog) :
     m_extraFiles(Settings::instance()->advanced()->subtitleFilters())
 {
 }
+
 QString Renamer::replace(QString& text, const QString& search, QString replacement)
 {
     text.replace("<" + search + ">", replacement.trimmed());

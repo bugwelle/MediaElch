@@ -2,10 +2,11 @@
 
 #define CATCH_CONFIG_ENABLE_CHRONO_STRINGMAKER
 
+#include "test/helpers/debug_output.h"
+
 // Catch2 is included in each test cpp file
 #include "third_party/catch2/catch.hpp"
 
-#include "test/helpers/debug_output.h"
 #include "test/helpers/diff.h"
 #include "test/helpers/matchers.h"
 

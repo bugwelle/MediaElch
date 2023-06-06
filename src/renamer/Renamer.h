@@ -1,6 +1,7 @@
 #pragma once
 
 #include "media/FileFilter.h"
+#include "utils/Meta.h"
 
 #include <QDir>
 #include <QString>
@@ -30,6 +31,46 @@ struct RenamerConfig
     bool renameDirectories = false;
     bool dryRun = false;
 };
+
+
+/// \brief A placeholder is a template string that can be filled with data.
+/// \details
+///     The placeholder class expects as input a template string.  This template string
+///     can be used to render strings that are filled with values from a data provider.
+/// \example
+///     ```cpp
+///     Placeholder p { QStringLiteral("<title|lower>{imdbId} - imdb-<imdbId>{/imdbId} - <genre[0]|lower>") };
+///     Placeholder::DataProvider data = …;
+///     if (p.isValidWith(data)) {
+///       QString result = p.replaceWith(data);
+///       // e.g. "my movie - action"
+///     }
+///     ```
+class Placeholder
+{
+public:
+    class DataProvider
+    {
+    public:
+        DataProvider() = default;
+        virtual ~DataProvider() = default;
+
+        virtual ELCH_NODISCARD bool hasField(const QString& name) = 0;
+        virtual ELCH_NODISCARD QString stringValue(const QString& name) = 0;
+        virtual ELCH_NODISCARD int integerValue(const QString& name) = 0;
+        virtual ELCH_NODISCARD double floatValue(const QString& name) = 0;
+    };
+
+    Placeholder fromTemplate(const QString& str);
+
+    bool hasParseError() const;
+    bool isValidWith(DataProvider& data) const;
+    QString replaceWith(DataProvider& data) const;
+
+private:
+    explicit Placeholder() = default;
+};
+
 
 class Renamer
 {
