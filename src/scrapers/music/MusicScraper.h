@@ -319,6 +319,9 @@ public:
 
 public:
     virtual QWidget* settingsWidget() = 0;
+    virtual bool hasSettings() const = 0;
+    virtual void loadSettings(ScraperSettings& settings) = 0;
+    virtual void saveSettings(ScraperSettings& settings) = 0;
 };
 
 QVector<ScraperSearchResult> toOldScraperSearchResult(const QVector<ArtistSearchJob::Result>& searchResults);

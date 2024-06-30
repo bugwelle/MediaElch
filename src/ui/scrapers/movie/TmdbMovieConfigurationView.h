@@ -1,6 +1,6 @@
 #pragma once
 
-#include "scrapers/movie/aebn/AebnConfiguration.h"
+#include "scrapers/movie/tmdb/TmdbMovieConfiguration.h"
 #include "ui/scrapers/ScraperConfigurationView.h"
 #include "utils/Meta.h"
 
@@ -11,13 +11,13 @@
 namespace mediaelch {
 namespace scraper {
 
-class AebnConfigurationView : public QObject, public ScraperConfigurationView
+class TmdbMovieConfigurationView : public QObject, public ScraperConfigurationView
 {
     Q_OBJECT
 
 public:
-    explicit AebnConfigurationView(AebnConfiguration& settings);
-    ~AebnConfigurationView() override = default;
+    explicit TmdbMovieConfigurationView(TmdbMovieConfiguration& settings);
+    ~TmdbMovieConfigurationView() override = default;
 
     void init() override;
     void load() override;
@@ -26,10 +26,9 @@ public:
     ELCH_NODISCARD QWidget* widget() override;
 
 private:
-    AebnConfiguration& m_settings;
+    TmdbMovieConfiguration& m_settings;
     QPointer<QWidget> m_widget;
     QComboBox* m_box;
-    QComboBox* m_genreBox;
 };
 
 } // namespace scraper

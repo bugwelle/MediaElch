@@ -12,9 +12,6 @@
 class ScraperInterface
 {
 public:
-    virtual bool hasSettings() const = 0;
-    virtual void loadSettings(ScraperSettings& settings) = 0;
-    virtual void saveSettings(ScraperSettings& settings) = 0;
     virtual ~ScraperInterface() = default;
 
     /// \todo Refactor to not do UI stuff here.

@@ -94,8 +94,6 @@ public:
     virtual QSet<MovieScraperInfo> scraperNativelySupports() = 0;
     /// \todo Remove
     virtual void changeLanguage(mediaelch::Locale locale) = 0;
-    /// \todo Remove and move into own settings classes.
-    virtual QWidget* settingsWidget() = 0;
 };
 
 } // namespace scraper

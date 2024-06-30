@@ -108,9 +108,9 @@ public:
     virtual void artistImages(Artist* artist, MusicBrainzId mbId, QSet<ImageType> types) = 0;
     virtual void albumImages(Album* album, MusicBrainzId mbId, QSet<ImageType> types) = 0;
 
-    bool hasSettings() const override = 0;
-    void loadSettings(ScraperSettings& settings) override = 0;
-    void saveSettings(ScraperSettings& settings) override = 0;
+    virtual bool hasSettings() const = 0;
+    virtual void loadSettings(ScraperSettings& settings) = 0;
+    virtual void saveSettings(ScraperSettings& settings) = 0;
     virtual QWidget* settingsWidget() = 0;
 
 public slots:

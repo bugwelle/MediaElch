@@ -1,4 +1,4 @@
-#include "globals/ScraperManager.h"
+#include "ui/scrapers/ScraperManager.h"
 
 #include "log/Log.h"
 #include "scrapers/ScraperConfiguration.h"
@@ -11,6 +11,7 @@
 #include "scrapers/movie/custom/CustomMovieScraper.h"
 #include "scrapers/movie/hotmovies/HotMovies.h"
 #include "scrapers/movie/imdb/ImdbMovie.h"
+#include "scrapers/movie/imdb/ImdbMovieConfiguration.h"
 #include "scrapers/movie/tmdb/TmdbMovie.h"
 #include "scrapers/movie/tmdb/TmdbMovieConfiguration.h"
 #include "scrapers/movie/videobuster/VideoBuster.h"
@@ -24,6 +25,9 @@
 #include "scrapers/tv_show/tmdb/TmdbTv.h"
 #include "scrapers/tv_show/tvmaze/TvMaze.h"
 #include "settings/Settings.h"
+#include "ui/scrapers/movie/AebnConfigurationView.h"
+#include "ui/scrapers/movie/ImdbMovieConfigurationView.h"
+#include "ui/scrapers/movie/TmdbMovieConfigurationView.h"
 
 namespace mediaelch {
 
@@ -37,23 +41,28 @@ ScraperManager::ScraperManager(Settings& settings, QObject* parent) : QObject(pa
 
 ScraperManager::~ScraperManager()
 {
-    qDeleteAll(m_configurations);
 }
 
 /**
  * \brief Returns a list of all movie scrapers
  * \return List of pointers of movie scrapers
  */
-const QVector<mediaelch::scraper::MovieScraper*>& ScraperManager::movieScrapers()
+QVector<mediaelch::scraper::MovieScraper*> ScraperManager::movieScrapers()
 {
-    return m_movieScrapers;
+    QVector<mediaelch::scraper::MovieScraper*> movieScrapers;
+    for (auto& entry : m_scraperMovies) {
+        if (entry.scraper() != nullptr) {
+            movieScrapers << entry.scraper();
+        }
+    }
+    return movieScrapers;
 }
 
 mediaelch::scraper::MovieScraper* ScraperManager::movieScraper(const QString& identifier)
 {
-    for (auto* scraper : asConst(m_movieScrapers)) {
-        if (scraper->meta().identifier == identifier) {
-            return scraper;
+    for (auto& scraper : asConst(m_scraperMovies)) {
+        if (scraper.scraper()->meta().identifier == identifier) {
+            return scraper.scraper();
         }
     }
     MediaElch_Debug_Assert(identifier != "");
@@ -111,23 +120,51 @@ void ScraperManager::initMovieScrapers()
 {
     using namespace mediaelch::scraper;
 
-    auto* tmdbConfig = new TmdbMovieConfiguration(m_settings);
-    auto* aebnConfig = new AebnConfiguration(m_settings);
-    m_configurations.append(tmdbConfig);
+    ManagedMovieScraper tmdb;
+    auto tmdbConfig = std::make_unique<TmdbMovieConfiguration>(m_settings);
+    tmdbConfig->init();
+    tmdb.m_scraper = std::make_unique<TmdbMovie>(*tmdbConfig, nullptr);
+    tmdb.m_view = std::make_unique<TmdbMovieConfigurationView>(*tmdbConfig);
+    tmdb.m_view->init();
+    tmdb.m_config = std::move(tmdbConfig);
 
-    for (auto* config : m_configurations) {
-        config->init();
-    }
+    ManagedMovieScraper imdb;
+    auto imdbConfig = std::make_unique<ImdbMovieConfiguration>(m_settings);
+    imdbConfig->init();
+    imdb.m_scraper = std::make_unique<ImdbMovie>(*imdbConfig, nullptr);
+    imdb.m_view = std::make_unique<ImdbMovieConfigurationView>(*imdbConfig);
+    imdb.m_view->init();
+    imdb.m_config = std::move(imdbConfig);
 
-    m_movieScrapers.append(new TmdbMovie(*tmdbConfig, this));
-    m_movieScrapers.append(new ImdbMovie(this));
-    m_movieScrapers.append(new VideoBuster(this));
+    ManagedMovieScraper videoBuster;
+    videoBuster.m_scraper = std::make_unique<VideoBuster>(nullptr);
+
     // Adult Movie Scrapers
-    m_movieScrapers.append(new AEBN(*aebnConfig, this));
-    m_movieScrapers.append(new HotMovies(this));
-    m_movieScrapers.append(new AdultDvdEmpire(this));
+    ManagedMovieScraper hotMovies;
+    hotMovies.m_scraper = std::make_unique<HotMovies>(nullptr);
 
-    m_movieScrapers.append(CustomMovieScraper::instance(this));
+    ManagedMovieScraper ade;
+    ade.m_scraper = std::make_unique<AdultDvdEmpire>(nullptr);
+
+    ManagedMovieScraper aebn;
+    auto aebnConfig = std::make_unique<AebnConfiguration>(m_settings);
+    aebnConfig->init();
+    aebn.m_scraper = std::make_unique<AEBN>(*aebnConfig, nullptr);
+    aebn.m_view = std::make_unique<AebnConfigurationView>(*aebnConfig);
+    aebn.m_view->init();
+    aebn.m_config = std::move(aebnConfig);
+
+    // Custom Movie Scraper
+    ManagedMovieScraper custom;
+    custom.m_scraper = std::make_unique<CustomMovieScraper>(nullptr);
+
+    m_scraperMovies.push_back(std::move(tmdb));
+    m_scraperMovies.push_back(std::move(imdb));
+    m_scraperMovies.push_back(std::move(videoBuster));
+    m_scraperMovies.push_back(std::move(hotMovies));
+    m_scraperMovies.push_back(std::move(ade));
+    m_scraperMovies.push_back(std::move(aebn));
+    m_scraperMovies.push_back(std::move(custom));
 }
 
 void ScraperManager::initTvScrapers()
@@ -169,6 +206,11 @@ void ScraperManager::initConcertScrapers()
 void ScraperManager::initMusicScrapers()
 {
     m_musicScrapers.append(new mediaelch::scraper::UniversalMusicScraper(this));
+}
+
+const std::vector<ManagedMovieScraper>& ScraperManager::allMovieScrapers()
+{
+    return m_scraperMovies;
 }
 
 } // namespace mediaelch

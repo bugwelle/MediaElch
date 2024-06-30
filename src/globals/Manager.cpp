@@ -75,7 +75,7 @@ MediaCenterInterface* Manager::mediaCenterInterface()
 
 /**
  * \brief Returns the active MediaCenterInterface for TV Shows
- * \return Instance of a MediaCenterinterface
+ * \return Instance of a MediaCenterInterface
  */
 MediaCenterInterface* Manager::mediaCenterInterfaceTvShow()
 {

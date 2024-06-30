@@ -237,7 +237,7 @@ void Settings::loadSettings()
             std::string id = scraper->meta().identifier.toStdString();
             // may replace existing settings
             m_scraperSettings[id] = std::make_unique<ScraperSettingsQt>(scraper->meta().identifier, *m_settings);
-            scraper->loadSettings(*m_scraperSettings[id]);
+            // FIXME  scraper->loadSettings(*m_scraperSettings[id]);
         }
     };
     loadSettings(Manager::instance()->scrapers().musicScrapers());
@@ -402,11 +402,11 @@ void Settings::saveSettings()
 
     const auto saveSettings = [&](auto scrapers) {
         for (auto* scraper : scrapers) {
-            if (scraper->hasSettings()) {
-                std::string id = scraper->meta().identifier.toStdString();
-                scraper->saveSettings(*m_scraperSettings[id]);
-                m_scraperSettings[id]->save();
-            }
+            // FIXME  if (scraper->hasSettings()) {
+            // FIXME      std::string id = scraper->meta().identifier.toStdString();
+            // FIXME      scraper->saveSettings(*m_scraperSettings[id]);
+            // FIXME      m_scraperSettings[id]->save();
+            // FIXME  }
         }
     };
     saveSettings(Manager::instance()->scrapers().musicScrapers());

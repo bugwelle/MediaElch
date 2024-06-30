@@ -76,26 +76,6 @@ void HotMovies::changeLanguage(mediaelch::Locale /*locale*/)
     // no-op: Only one language is supported and it is hard-coded.
 }
 
-bool HotMovies::hasSettings() const
-{
-    return false;
-}
-
-void HotMovies::loadSettings(ScraperSettings& settings)
-{
-    Q_UNUSED(settings);
-}
-
-void HotMovies::saveSettings(ScraperSettings& settings)
-{
-    Q_UNUSED(settings);
-}
-
-QWidget* HotMovies::settingsWidget()
-{
-    return nullptr;
-}
-
 QString HotMovies::decodeAndTrim(const QString& htmlEncodedString)
 {
     return QTextDocumentFragment::fromHtml(htmlEncodedString).toPlainText().trimmed();

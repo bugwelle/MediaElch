@@ -20,6 +20,10 @@ class TvScraperInterface : public QObject, public ScraperInterface
     Q_OBJECT
 
 public:
+    virtual bool hasSettings() const = 0;
+    virtual void loadSettings(ScraperSettings& settings) = 0;
+    virtual void saveSettings(ScraperSettings& settings) = 0;
+
     virtual void search(QString searchStr) = 0;
     virtual void
     loadTvShowData(TvDbId id, TvShow* show, TvShowUpdateType updateType, QSet<ShowScraperInfo> infosToLoad) = 0;

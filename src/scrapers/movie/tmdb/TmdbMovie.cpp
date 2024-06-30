@@ -74,32 +74,12 @@ TmdbMovie::TmdbMovie(TmdbMovieConfiguration& settings, QObject* parent) :
     m_meta.defaultLocale = TmdbMovieConfiguration::defaultLocale();
     m_meta.isAdult = false;
 
-    m_widget = new QWidget;
-    m_box = new QComboBox(m_widget);
-
-    for (const mediaelch::Locale& lang : asConst(m_meta.supportedLanguages)) {
-        m_box->addItem(lang.languageTranslated(), lang.toString());
-    }
-
-    auto* layout = new QGridLayout(m_widget);
-    layout->addWidget(new QLabel(tr("Language")), 0, 0);
-    layout->addWidget(m_box, 0, 1);
-    layout->setColumnStretch(2, 1);
-    layout->setContentsMargins(12, 0, 12, 12);
-    m_widget->setLayout(layout);
-
     // TODO: Should not be called by the constructor
     initialize();
 }
 
 TmdbMovie::~TmdbMovie()
 {
-    if (!m_widget.isNull() && m_widget->parent() == nullptr) {
-        // We set MainWindow::instance() as this Widget's parent.
-        // But at construction time, the instance is not setup, yet.
-        // See settingsWidget()
-        m_widget->deleteLater();
-    }
 }
 
 const MovieScraper::ScraperMeta& TmdbMovie::meta() const
@@ -128,45 +108,6 @@ MovieScrapeJob* TmdbMovie::loadMovie(MovieScrapeJob::Config config)
         config.locale = meta().defaultLocale;
     }
     return new TmdbMovieScrapeJob(m_api, std::move(config), this);
-}
-
-bool TmdbMovie::hasSettings() const
-{
-    return true;
-}
-
-QWidget* TmdbMovie::settingsWidget()
-{
-    if (m_widget->parent() == nullptr) {
-        m_widget->setParent(MainWindow::instance());
-    }
-    return m_widget;
-}
-
-void TmdbMovie::loadSettings(ScraperSettings& settings)
-{
-    m_meta.defaultLocale = settings.language(m_meta.defaultLocale);
-    if (m_meta.defaultLocale.toString() == "C") {
-        m_meta.defaultLocale = "en";
-    }
-
-    const QString locale = m_meta.defaultLocale.toString('-');
-    const QString lang = m_meta.defaultLocale.language();
-
-    for (int i = 0, n = m_box->count(); i < n; ++i) {
-        if (m_box->itemData(i).toString() == lang || m_box->itemData(i).toString() == locale) {
-            m_box->setCurrentIndex(i);
-            break;
-        }
-    }
-}
-
-void TmdbMovie::saveSettings(ScraperSettings& settings)
-{
-    const QString language = m_box->itemData(m_box->currentIndex()).toString();
-    settings.setLanguage(language);
-    settings.save();
-    loadSettings(settings);
 }
 
 QSet<MovieScraperInfo> TmdbMovie::scraperNativelySupports()

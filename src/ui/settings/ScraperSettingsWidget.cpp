@@ -11,6 +11,12 @@
 #include "scrapers/tv_show/thetvdb/TheTvDb.h"
 #include "settings/Settings.h"
 
+namespace {
+
+static constexpr char PROPERTY_IS_ADULT[] = "isAdult";
+
+}
+
 ScraperSettingsWidget::ScraperSettingsWidget(QWidget* parent) : QWidget(parent), ui(new Ui::ScraperSettingsWidget)
 {
     ui->setupUi(this);
@@ -25,15 +31,39 @@ ScraperSettingsWidget::ScraperSettingsWidget(QWidget* parent) : QWidget(parent),
     ui->customScraperTable->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
     ui->customScraperTable->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 
+    connect(
+        this, &ScraperSettingsWidget::saveSettings, this, &ScraperSettingsWidget::onSaveSettings, Qt::DirectConnection);
+
+    mediaelch::ScraperManager& scraperManager = Manager::instance()->scrapers();
+    const auto& movieScrapers = scraperManager.allMovieScrapers();
+
     int scraperCounter = 0;
-    for (auto* scraper : Manager::instance()->scrapers().movieScrapers()) {
-        if (scraper->hasSettings()) {
-            auto* name = new QLabel("<b>" + scraper->meta().name + "</b>");
+    for (const auto& movieScraper : movieScrapers) {
+        mediaelch::ScraperConfigurationView* view = movieScraper.view();
+        if (view != nullptr) {
+            MediaElch_Debug_Ensures(movieScraper.scraper() != nullptr);
+
+            view->load();
+
+            auto* name = new QLabel("<b>" + movieScraper.scraper()->meta().name + "</b>");
             name->setAlignment(Qt::AlignRight);
-            name->setStyleSheet("margin-top: 3px;");
+
+            QWidget* scraperWidget = view->widget();
             ui->gridLayoutScrapers->addWidget(name, scraperCounter, 0);
-            ui->gridLayoutScrapers->addWidget(scraper->settingsWidget(), scraperCounter, 1);
-            m_scraperRows.insert(scraper, scraperCounter);
+            ui->gridLayoutScrapers->addWidget(scraperWidget, scraperCounter, 1);
+            connect(this, &ScraperSettingsWidget::saveSettings, this, [view]() { view->save(); }, Qt::DirectConnection);
+
+            m_scraperRows.insert(movieScraper.scraper(), scraperCounter);
+
+            if (movieScraper.scraper()->meta().isAdult) {
+                ui->gridLayoutScrapers->itemAtPosition(scraperCounter, 0)
+                    ->widget()
+                    ->setProperty(PROPERTY_IS_ADULT, true);
+                ui->gridLayoutScrapers->itemAtPosition(scraperCounter, 1)
+                    ->widget()
+                    ->setProperty(PROPERTY_IS_ADULT, true);
+            }
+
             scraperCounter++;
         }
     }
@@ -73,9 +103,7 @@ ScraperSettingsWidget::ScraperSettingsWidget(QWidget* parent) : QWidget(parent),
         }
     }
 
-    // clang-format off
     connect(ui->chkEnableAdultScrapers, &QAbstractButton::clicked, this, &ScraperSettingsWidget::onShowAdultScrapers);
-    // clang-format on
 }
 
 ScraperSettingsWidget::~ScraperSettingsWidget()
@@ -143,7 +171,7 @@ void ScraperSettingsWidget::loadSettings()
     onShowAdultScrapers();
 }
 
-void ScraperSettingsWidget::saveSettings()
+void ScraperSettingsWidget::onSaveSettings()
 {
     m_settings->setShowAdultScrapers(ui->chkEnableAdultScrapers->isChecked());
 
@@ -163,11 +191,20 @@ void ScraperSettingsWidget::saveSettings()
 
 void ScraperSettingsWidget::onShowAdultScrapers()
 {
-    bool show = ui->chkEnableAdultScrapers->isChecked();
-    for (const auto* scraper : Manager::instance()->scrapers().movieScrapers()) {
-        if (scraper->meta().isAdult && scraper->hasSettings()) {
-            ui->gridLayoutScrapers->itemAtPosition(m_scraperRows.value(scraper), 0)->widget()->setVisible(show);
-            ui->gridLayoutScrapers->itemAtPosition(m_scraperRows.value(scraper), 1)->widget()->setVisible(show);
+    const bool show = ui->chkEnableAdultScrapers->isChecked();
+
+    const int rows = ui->gridLayoutScrapers->rowCount();
+    for (int i = 0; i < rows; ++i) {
+        QWidget* label = ui->gridLayoutScrapers->itemAtPosition(i, 0)->widget();
+        MediaElch_Debug_Assert(label != nullptr);
+
+        const bool isAdult = label->property(PROPERTY_IS_ADULT).toBool();
+        if (isAdult) {
+            QWidget* widget = ui->gridLayoutScrapers->itemAtPosition(i, 1)->widget();
+            MediaElch_Debug_Assert(widget != nullptr);
+
+            label->setVisible(show);
+            widget->setVisible(show);
         }
     }
 }

@@ -180,7 +180,6 @@ SOURCES += src/main.cpp \
     src/globals/Helper.cpp \
     src/globals/Manager.cpp \
     src/globals/MessageIds.cpp \
-    src/globals/ScraperManager.cpp \
     src/globals/VersionInfo.cpp \
     src/globals/Module.cpp \
     src/import/DownloadFileSearcher.cpp \
@@ -415,6 +414,7 @@ SOURCES += src/main.cpp \
     src/ui/notifications/Notificator.cpp \
     src/ui/renamer/RenamerDialog.cpp \
     src/ui/renamer/RenamerPlaceholders.cpp \
+    src/ui/scrapers/ScraperManager.cpp \
     src/ui/scrapers/movie/aebn/AebnConfigurationView.cpp \
     src/ui/settings/ConcertSettingsWidget.cpp \
     src/ui/settings/CustomTvScraperSettingsWidget.cpp \

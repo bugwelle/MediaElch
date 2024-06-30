@@ -33,10 +33,6 @@ public:
     void setScraperMovieIds(QHash<MovieScraper*, MovieIdentifier> ids);
 
 public:
-    bool hasSettings() const override;
-    void loadSettings(ScraperSettings& settings) override;
-    void saveSettings(ScraperSettings& settings) override;
-
     QSet<MovieScraperInfo> scraperNativelySupports() override;
 
     void changeLanguage(mediaelch::Locale locale) override;
@@ -46,8 +42,6 @@ public:
     QMap<MovieScraperInfo, MovieScraper*> detailsToScrapers();
     // TODO: Maybe use some custom loadMovie() function? This seems hacky.
     QVector<MovieScraper*> scrapersNeedSearch(const QSet<MovieScraperInfo>& infos);
-
-    QWidget* settingsWidget() override;
 
 private:
     ImageProvider* imageProviderForInfo(int info);

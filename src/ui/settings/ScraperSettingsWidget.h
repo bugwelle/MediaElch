@@ -27,9 +27,12 @@ public:
 
     void setSettings(Settings& settings);
     void loadSettings();
+
+signals:
     void saveSettings();
 
 private slots:
+    void onSaveSettings();
     void onShowAdultScrapers();
 
 private:

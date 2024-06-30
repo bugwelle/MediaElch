@@ -1,12 +1,12 @@
 #include "CustomMovieScraper.h"
 
 #include "globals/Manager.h"
-#include "globals/ScraperManager.h"
 #include "log/Log.h"
 #include "scrapers/movie/custom/CustomMovieScrapeJob.h"
 #include "scrapers/movie/imdb/ImdbMovie.h"
 #include "scrapers/movie/tmdb/TmdbMovie.h"
 #include "settings/Settings.h"
+#include "ui/scrapers/ScraperManager.h"
 #include "utils/Containers.h"
 
 #include <QJsonDocument>
@@ -196,26 +196,6 @@ MovieScraper* CustomMovieScraper::scraperForInfo(MovieScraperInfo info)
     return scraper;
 }
 
-bool CustomMovieScraper::hasSettings() const
-{
-    return false;
-}
-
-void CustomMovieScraper::loadSettings(ScraperSettings& settings)
-{
-    Q_UNUSED(settings);
-    updateSupportedDetails();
-}
-
-void CustomMovieScraper::saveSettings(ScraperSettings& settings)
-{
-    Q_UNUSED(settings);
-}
-
-QWidget* CustomMovieScraper::settingsWidget()
-{
-    return nullptr;
-}
 
 } // namespace scraper
 } // namespace mediaelch

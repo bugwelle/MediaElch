@@ -74,6 +74,10 @@ public:
     virtual QSet<ConcertScraperInfo> scraperSupports() = 0;
     virtual QWidget* settingsWidget() = 0;
 
+    virtual bool hasSettings() const = 0;
+    virtual void loadSettings(ScraperSettings& settings) = 0;
+    virtual void saveSettings(ScraperSettings& settings) = 0;
+
 signals:
     void initialized(bool wasSuccessful, mediaelch::scraper::ConcertScraper* scraper);
 };

@@ -76,25 +76,5 @@ void AdultDvdEmpire::changeLanguage(mediaelch::Locale /*locale*/)
     // no-op: only one language is supported and hard-coded.
 }
 
-bool AdultDvdEmpire::hasSettings() const
-{
-    return false;
-}
-
-void AdultDvdEmpire::loadSettings(ScraperSettings& settings)
-{
-    Q_UNUSED(settings);
-}
-
-void AdultDvdEmpire::saveSettings(ScraperSettings& settings)
-{
-    Q_UNUSED(settings);
-}
-
-QWidget* AdultDvdEmpire::settingsWidget()
-{
-    return nullptr;
-}
-
 } // namespace scraper
 } // namespace mediaelch

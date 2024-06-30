@@ -1,6 +1,8 @@
+#include "test/mocks/settings/SettingsMock.h"
 #include "test/test_helpers.h"
 
 #include "scrapers/movie/imdb/ImdbMovie.h"
+#include "scrapers/movie/imdb/ImdbMovieConfiguration.h"
 #include "scrapers/movie/imdb/ImdbMovieScrapeJob.h"
 #include "scrapers/movie/imdb/ImdbMovieSearchJob.h"
 #include "test/helpers/scraper_helpers.h"
@@ -18,7 +20,9 @@ static ImdbApi& getImdbApi()
 
 static MovieScrapeJob::Config makeImdbConfig(const QString& id)
 {
-    static auto imdb = std::make_unique<ImdbMovie>();
+    static auto settings = std::make_unique<SettingsMock>();
+    static auto imdbConfig = std::make_unique<ImdbMovieConfiguration>(*settings);
+    static auto imdb = std::make_unique<ImdbMovie>(*imdbConfig);
     MovieScrapeJob::Config config;
     config.identifier = MovieIdentifier(id);
     config.details = imdb->meta().supportedDetails;

@@ -203,7 +203,7 @@ void MovieSearchWidget::setupLanguageDropdown()
         scraper->changeLanguage(defaultLanguage); // store the language in case it was changed before
         ScraperSettings* settings = Settings::instance()->scraperSettings(scraper->meta().identifier);
         MediaElch_Assert(settings != nullptr);
-        scraper->saveSettings(*settings);
+        // FIXME  scraper->saveSettings(*settings);
         ui->comboLanguage->setupLanguages({defaultLanguage}, defaultLanguage);
     }
 }
@@ -426,7 +426,7 @@ void MovieSearchWidget::onScraperChanged(int index)
     const auto& meta = m_currentScraper->meta();
     ScraperSettings* settings = Settings::instance()->scraperSettings(meta.identifier);
     MediaElch_Debug_Assert(settings != nullptr);
-    m_currentScraper->loadSettings(*settings);
+    // FIXME m_currentScraper->loadSettings(*settings);
 
     if (!isCustomScrapingInProgress()) {
         setCheckBoxesForCurrentScraper();
@@ -453,7 +453,7 @@ void MovieSearchWidget::onLanguageChanged()
     ScraperSettings* scraperSettings = Settings::instance()->scraperSettings(m_currentScraper->meta().identifier);
     MediaElch_Debug_Assert(scraperSettings != nullptr);
     m_currentScraper->changeLanguage(m_currentLanguage); // store the language in case it was changed before
-    m_currentScraper->saveSettings(*scraperSettings);
+                                                         // FIXME  m_currentScraper->saveSettings(*scraperSettings);
     startSearch();
 }
 
