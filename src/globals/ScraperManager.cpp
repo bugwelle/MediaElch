@@ -7,6 +7,7 @@
 #include "scrapers/movie/MovieScraper.h"
 #include "scrapers/movie/adultdvdempire/AdultDvdEmpire.h"
 #include "scrapers/movie/aebn/AEBN.h"
+#include "scrapers/movie/aebn/AebnConfiguration.h"
 #include "scrapers/movie/custom/CustomMovieScraper.h"
 #include "scrapers/movie/hotmovies/HotMovies.h"
 #include "scrapers/movie/imdb/ImdbMovie.h"
@@ -111,6 +112,7 @@ void ScraperManager::initMovieScrapers()
     using namespace mediaelch::scraper;
 
     auto* tmdbConfig = new TmdbMovieConfiguration(m_settings);
+    auto* aebnConfig = new AebnConfiguration(m_settings);
     m_configurations.append(tmdbConfig);
 
     for (auto* config : m_configurations) {
@@ -121,7 +123,7 @@ void ScraperManager::initMovieScrapers()
     m_movieScrapers.append(new ImdbMovie(this));
     m_movieScrapers.append(new VideoBuster(this));
     // Adult Movie Scrapers
-    m_movieScrapers.append(new AEBN(this));
+    m_movieScrapers.append(new AEBN(*aebnConfig, this));
     m_movieScrapers.append(new HotMovies(this));
     m_movieScrapers.append(new AdultDvdEmpire(this));
 

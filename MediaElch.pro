@@ -267,6 +267,7 @@ SOURCES += src/main.cpp \
     src/scrapers/movie/aebn/AebnApi.cpp \
     src/scrapers/movie/aebn/AebnScrapeJob.cpp \
     src/scrapers/movie/aebn/AebnSearchJob.cpp \
+    src/scrapers/movie/aebn/AebnConfiguration.cpp \
     src/scrapers/movie/custom/CustomMovieScraper.cpp \
     src/scrapers/movie/custom/CustomMovieScrapeJob.cpp \
     src/scrapers/movie/hotmovies/HotMovies.cpp \
@@ -414,6 +415,7 @@ SOURCES += src/main.cpp \
     src/ui/notifications/Notificator.cpp \
     src/ui/renamer/RenamerDialog.cpp \
     src/ui/renamer/RenamerPlaceholders.cpp \
+    src/ui/scrapers/movie/aebn/AebnConfigurationView.cpp \
     src/ui/settings/ConcertSettingsWidget.cpp \
     src/ui/settings/CustomTvScraperSettingsWidget.cpp \
     src/ui/settings/ExportSettingsWidget.cpp \
@@ -635,6 +637,7 @@ HEADERS  += Version.h \
     src/scrapers/movie/aebn/AebnApi.h \
     src/scrapers/movie/aebn/AebnSearchJob.h \
     src/scrapers/movie/aebn/AebnScrapeJob.h \
+    src/scrapers/movie/aebn/AebnConfiguration.h \
     src/scrapers/movie/custom/CustomMovieScraper.h \
     src/scrapers/movie/custom/CustomMovieScrapeJob.h \
     src/scrapers/movie/hotmovies/HotMovies.h \
@@ -783,6 +786,7 @@ HEADERS  += Version.h \
     src/ui/notifications/Notificator.h \
     src/ui/renamer/RenamerDialog.h \
     src/ui/renamer/RenamerPlaceholders.h \
+    src/ui/scrapers/movie/aebn/AebnConfigurationView.h \
     src/ui/settings/ConcertSettingsWidget.h \
     src/ui/settings/CustomTvScraperSettingsWidget.h \
     src/ui/settings/ExportSettingsWidget.h \

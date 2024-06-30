@@ -21,7 +21,7 @@ TmdbMovieConfiguration::TmdbMovieConfiguration(Settings& settings) :
 
 void TmdbMovieConfiguration::init()
 {
-    settings().setDefaultValue(KEY_SCRAPERS_LANGUAGE, mediaelch::Locale::English.toString());
+    settings().setDefaultValue(KEY_SCRAPERS_LANGUAGE, defaultLocale().toString());
 }
 
 Locale TmdbMovieConfiguration::language()
