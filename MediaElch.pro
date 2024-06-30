@@ -284,6 +284,7 @@ SOURCES += src/main.cpp \
     src/scrapers/movie/tmdb/TmdbMovie.cpp \
     src/scrapers/movie/tmdb/TmdbMovieSearchJob.cpp \
     src/scrapers/movie/tmdb/TmdbMovieScrapeJob.cpp \
+    src/scrapers/movie/tmdb/TmdbMovieConfiguration.cpp \
     src/scrapers/movie/videobuster/VideoBuster.cpp \
     src/scrapers/movie/videobuster/VideoBusterApi.cpp \
     src/scrapers/movie/videobuster/VideoBusterSearchJob.cpp \
@@ -301,6 +302,7 @@ SOURCES += src/main.cpp \
     src/scrapers/ScraperInterface.cpp \
     src/scrapers/ScraperResult.cpp \
     src/scrapers/ScraperUtils.cpp \
+    src/scrapers/ScraperConfiguration.cpp \
     src/scrapers/tmdb/TmdbApi.cpp \
     src/scrapers/trailer/HdTrailers.cpp \
     src/scrapers/trailer/TrailerProvider.cpp \
@@ -650,6 +652,7 @@ HEADERS  += Version.h \
     src/scrapers/movie/tmdb/TmdbMovie.h \
     src/scrapers/movie/tmdb/TmdbMovieSearchJob.h \
     src/scrapers/movie/tmdb/TmdbMovieScrapeJob.h \
+    src/scrapers/movie/tmdb/TmdbMovieConfiguration.h \
     src/scrapers/movie/videobuster/VideoBuster.h \
     src/scrapers/movie/videobuster/VideoBusterApi.h \
     src/scrapers/movie/videobuster/VideoBusterSearchJob.h \
@@ -667,6 +670,7 @@ HEADERS  += Version.h \
     src/scrapers/ScraperInterface.h \
     src/scrapers/ScraperResult.h \
     src/scrapers/ScraperUtils.h \
+    src/scrapers/ScraperConfiguration.h \
     src/scrapers/tmdb/TmdbApi.h \
     src/scrapers/trailer/HdTrailers.h \
     src/scrapers/trailer/TrailerProvider.h \

@@ -32,3 +32,6 @@ and set-value functions, which can be mocked.
 
 The module stores default values for all settings on initialization.
 That way, we know all possible settings.
+
+And the settings itself are a simple key-value store.
+We only add typed interfaces around it that can easily be mocked.
