@@ -1,0 +1,67 @@
+
+movies/
+    Movie
+    MovieDatabase    # typed wrapper around database
+    MovieCsvExporter
+    MovieNfoExporter
+    MovieImporter
+    MovieFileSearcher
+    scrapers/
+        MovieScraperManager
+        tmdb/
+        imdb/
+    ui/
+        MovieWidget        # main
+        MovieFilesWidget
+        MovieEditWidget    # braucht event listener, wenn sich was ändert
+
+tv_shows/
+    TVShow
+    TvDatabase
+    TvCsvExporter
+    TvNfoExporter
+    TvImporter
+    TvFileSearcher
+    scrapers/
+        TvScraperManager
+        tmdb/
+        imdb/
+
+concerts/
+    Concert
+    ConcertDatabase
+    ConcertCsvExporter
+    ConcertNfoExporter
+    ConcertImporter
+    TvFileSearcher
+    scrapers/
+        ConcertScraperManager
+        tmdb/
+        imdb/
+
+settings/
+    SettingsModule
+    SettingsRegistry
+    ui/
+        SettingsWidget
+
+scrapers/
+    ScraperModule
+
+database/
+    Database
+    DatabaseSettings  # typed wrapper around settings; registers itself in settings module via init method
+
+exporter/
+    NfoExporter
+    NfoExporterSettings
+    CsvExporter
+    CsvExporterSettings  # typed wrapper around settings; registers itself in settings module via init method
+
+importer/
+    GenericImporter
+
+file_search/      #   Sollte nur per Event mit Datenbank verbunden sein
+    FileSearcher
+    FileSearcherSettings  # typed wrapper around settings; registers itself in settings module via init method
+

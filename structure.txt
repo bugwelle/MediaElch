@@ -1,0 +1,564 @@
+
+├── data
+│   ├── Actor.h
+│   ├── AllMusicId.h
+│   ├── Certification.h
+│   ├── CMakeLists.txt
+│   ├── concert
+│   │   ├── ConcertController.h
+│   │   └── Concert.h
+│   ├── Filter.h
+│   ├── Image.h
+│   ├── ImdbId.h
+│   ├── Locale.h
+│   ├── movie
+│   │   ├── MovieController.h
+│   │   ├── MovieCrew.h
+│   │   ├── Movie.h
+│   │   ├── MovieImages.h
+│   │   └── MovieSet.h
+│   ├── music
+│   │   ├── AlbumController.h
+│   │   ├── Album.h
+│   │   ├── ArtistController.h
+│   │   └── Artist.h
+│   ├── MusicBrainzId.h
+│   ├── Poster.h
+│   ├── Rating.h
+│   ├── ResumeTime.h
+│   ├── Subtitle.h
+│   ├── TheAudioDbId.h
+│   ├── ThumbnailDimensions.h
+│   ├── TmdbId.h
+│   ├── TvDbId.h
+│   ├── TvMazeId.h
+│   ├── tv_show
+│   │   ├── EpisodeMap.h
+│   │   ├── EpisodeNumber.h
+│   │   ├── SeasonNumber.h
+│   │   ├── SeasonOrder.h
+│   │   ├── TvShowEpisode.h
+│   │   └── TvShow.h
+│   └── WikidataId.h
+├── database
+│   ├── CMakeLists.txt
+│   ├── Database.h
+│   └── DatabaseId.h
+├── export
+│   ├── CMakeLists.txt
+│   ├── CsvExport.h
+│   ├── ExportTemplate.h
+│   ├── ExportTemplateLoader.h
+│   ├── MediaExport.h
+│   ├── SimpleEngine.h
+│   └── TableWriter.h
+├── file_search
+│   ├── CMakeLists.txt
+│   ├── ConcertFileSearcher.h
+│   ├── movie
+│   │   ├── MovieDirectorySearcher.h
+│   │   ├── MovieDirScan.h
+│   │   └── MovieFileSearcher.h
+│   ├── MovieFilesOrganizer.h
+│   ├── MusicFileSearcher.h
+│   └── TvShowFileSearcher.h
+├── globals
+│   ├── CMakeLists.txt
+│   ├── Globals.h
+│   ├── Helper.h
+│   ├── LocaleStringCompare.h
+│   ├── Manager.h
+│   ├── MediaDirectory.h
+│   ├── MessageIds.h
+│   ├── Module.h
+│   ├── ScraperManager.h
+│   └── VersionInfo.h
+├── import
+│   ├── CMakeLists.txt
+│   ├── DownloadFileSearcher.h
+│   ├── Extractor.h
+│   ├── FileWorker.h
+│   ├── MakeMkvCon.h
+│   └── MyFile.h
+├── log
+│   ├── CMakeLists.txt
+│   └── Log.h
+├── media
+│   ├── AsyncImage.h
+│   ├── CMakeLists.txt
+│   ├── FileFilter.h
+│   ├── FilenameUtils.h
+│   ├── ImageCache.h
+│   ├── ImageCapture.h
+│   ├── ImageUtils.h
+│   ├── MediaInfoFile.h
+│   ├── NameFormatter.h
+│   ├── Path.h
+│   └── StreamDetails.h
+├── media_center
+│   ├── CMakeLists.txt
+│   ├── kodi
+│   │   ├── AlbumXmlReader.h
+│   │   ├── AlbumXmlWriter.h
+│   │   ├── ArtistXmlReader.h
+│   │   ├── ArtistXmlWriter.h
+│   │   ├── ConcertXmlReader.h
+│   │   ├── ConcertXmlWriter.h
+│   │   ├── EpisodeXmlReader.h
+│   │   ├── EpisodeXmlWriter.h
+│   │   ├── KodiXmlWriter.h
+│   │   ├── MovieXmlReader.h
+│   │   ├── MovieXmlWriter.h
+│   │   ├── TvShowXmlReader.h
+│   │   └── TvShowXmlWriter.h
+│   ├── KodiVersion.h
+│   ├── KodiXml.h
+│   └── MediaCenterInterface.h
+├── model
+│   ├── ActorModel.h
+│   ├── CMakeLists.txt
+│   ├── ConcertModel.h
+│   ├── ConcertProxyModel.h
+│   ├── ImageModel.h
+│   ├── ImageProxyModel.h
+│   ├── MediaStatusColumn.h
+│   ├── MovieModel.h
+│   ├── MovieProxyModel.h
+│   ├── music
+│   │   ├── MusicModel.h
+│   │   ├── MusicModelItem.h
+│   │   ├── MusicModelRoles.h
+│   │   └── MusicProxyModel.h
+│   ├── RatingModel.h
+│   ├── tv_show
+│   │   ├── EpisodeModelItem.h
+│   │   ├── SeasonModelItem.h
+│   │   ├── TvShowBaseModelItem.h
+│   │   ├── TvShowModelItem.h
+│   │   ├── TvShowRootModelItem.h
+│   │   └── TvShowUtils.h
+│   ├── TvShowModel.h
+│   └── TvShowProxyModel.h
+├── network
+│   ├── CMakeLists.txt
+│   ├── DownloadManagerElement.h
+│   ├── DownloadManager.h
+│   ├── HttpStatusCodes.h
+│   ├── NetworkManager.h
+│   ├── NetworkReplyWatcher.h
+│   ├── NetworkRequest.h
+│   └── WebsiteCache.h
+├── renamer
+│   ├── CMakeLists.txt
+│   ├── ConcertRenamer.h
+│   ├── EpisodeRenamer.h
+│   ├── MovieRenamer.h
+│   └── Renamer.h
+├── scrapers
+│   ├── CMakeLists.txt
+│   ├── concert
+│   │   ├── ConcertIdentifier.h
+│   │   ├── ConcertScraper.h
+│   │   ├── ConcertSearchJob.h
+│   │   └── tmdb
+│   │       ├── TmdbConcert.h
+│   │       └── TmdbConcertSearchJob.h
+│   ├── image
+│   │   ├── CMakeLists.txt
+│   │   ├── FanartTv.h
+│   │   ├── FanartTvMusicArtists.h
+│   │   ├── FanartTvMusic.h
+│   │   ├── ImageProvider.h
+│   │   ├── TheTvDbImages.h
+│   │   └── TmdbImages.h
+│   ├── imdb
+│   │   ├── CMakeLists.txt
+│   │   ├── ImdbApi.h
+│   │   └── ImdbReferencePage.h
+│   ├── movie
+│   │   ├── adultdvdempire
+│   │   │   ├── AdultDvdEmpireApi.h
+│   │   │   ├── AdultDvdEmpire.h
+│   │   │   ├── AdultDvdEmpireScrapeJob.h
+│   │   │   ├── AdultDvdEmpireSearchJob.h
+│   │   │   └── CMakeLists.txt
+│   │   ├── aebn
+│   │   │   ├── AebnApi.h
+│   │   │   ├── AEBN.h
+│   │   │   ├── AebnScrapeJob.h
+│   │   │   ├── AebnSearchJob.h
+│   │   │   └── CMakeLists.txt
+│   │   ├── CMakeLists.txt
+│   │   ├── custom
+│   │   │   ├── CMakeLists.txt
+│   │   │   ├── CustomMovieScrapeJob.h
+│   │   │   └── CustomMovieScraper.h
+│   │   ├── hotmovies
+│   │   │   ├── CMakeLists.txt
+│   │   │   ├── HotMoviesApi.h
+│   │   │   ├── HotMovies.h
+│   │   │   ├── HotMoviesScrapeJob.h
+│   │   │   └── HotMoviesSearchJob.h
+│   │   ├── imdb
+│   │   │   ├── CMakeLists.txt
+│   │   │   ├── ImdbMovie.h
+│   │   │   ├── ImdbMovieScrapeJob.h
+│   │   │   └── ImdbMovieSearchJob.h
+│   │   ├── MovieIdentifier.h
+│   │   ├── MovieMerger.h
+│   │   ├── MovieScrapeJob.h
+│   │   ├── MovieScraper.h
+│   │   ├── MovieSearchJob.h
+│   │   ├── tmdb
+│   │   │   ├── CMakeLists.txt
+│   │   │   ├── TmdbMovieConfiguration.h
+│   │   │   ├── TmdbMovie.h
+│   │   │   ├── TmdbMovieScrapeJob.h
+│   │   │   └── TmdbMovieSearchJob.h
+│   │   └── videobuster
+│   │       ├── CMakeLists.txt
+│   │       ├── VideoBusterApi.h
+│   │       ├── VideoBuster.h
+│   │       ├── VideoBusterScrapeJob.h
+│   │       └── VideoBusterSearchJob.h
+│   ├── music
+│   │   ├── AllMusic.h
+│   │   ├── Discogs.h
+│   │   ├── MusicBrainz.h
+│   │   ├── MusicMerger.h
+│   │   ├── MusicScraper.h
+│   │   ├── TheAudioDb.h
+│   │   ├── TvTunes.h
+│   │   └── UniversalMusicScraper.h
+│   ├── ScraperConfiguration.h
+│   ├── ScraperError.h
+│   ├── ScraperInfos.h
+│   ├── ScraperInterface.h
+│   ├── ScraperResult.h
+│   ├── ScraperUtils.h
+│   ├── tmdb
+│   │   ├── CMakeLists.txt
+│   │   └── TmdbApi.h
+│   ├── trailer
+│   │   ├── HdTrailers.h
+│   │   ├── TrailerProvider.h
+│   │   └── TrailerResult.h
+│   ├── tv_show
+│   │   ├── CMakeLists.txt
+│   │   ├── custom
+│   │   │   ├── CMakeLists.txt
+│   │   │   ├── CustomEpisodeScrapeJob.h
+│   │   │   ├── CustomSeasonScrapeJob.h
+│   │   │   ├── CustomShowScrapeJob.h
+│   │   │   ├── CustomTvScraperConfig.h
+│   │   │   └── CustomTvScraper.h
+│   │   ├── empty
+│   │   │   └── EmptyTvScraper.h
+│   │   ├── EpisodeIdentifier.h
+│   │   ├── EpisodeScrapeJob.h
+│   │   ├── fernsehserien_de
+│   │   │   ├── CMakeLists.txt
+│   │   │   └── FernsehserienDe.h
+│   │   ├── imdb
+│   │   │   ├── CMakeLists.txt
+│   │   │   ├── ImdbTvEpisodeParser.h
+│   │   │   ├── ImdbTvEpisodeScrapeJob.h
+│   │   │   ├── ImdbTv.h
+│   │   │   ├── ImdbTvSeasonParser.h
+│   │   │   ├── ImdbTvSeasonScrapeJob.h
+│   │   │   ├── ImdbTvShowParser.h
+│   │   │   ├── ImdbTvShowScrapeJob.h
+│   │   │   ├── ImdbTvShowSearchJob.h
+│   │   │   └── test.html
+│   │   ├── SeasonScrapeJob.h
+│   │   ├── ShowIdentifier.h
+│   │   ├── ShowMerger.h
+│   │   ├── ShowScrapeJob.h
+│   │   ├── ShowSearchJob.h
+│   │   ├── thetvdb
+│   │   │   ├── CMakeLists.txt
+│   │   │   ├── TheTvDbApi.h
+│   │   │   ├── TheTvDbEpisodeParser.h
+│   │   │   ├── TheTvDbEpisodeScrapeJob.h
+│   │   │   ├── TheTvDbEpisodesParser.h
+│   │   │   ├── TheTvDb.h
+│   │   │   ├── TheTvDbSeasonScrapeJob.h
+│   │   │   ├── TheTvDbShowParser.h
+│   │   │   ├── TheTvDbShowScrapeJob.h
+│   │   │   └── TheTvDbShowSearchJob.h
+│   │   ├── tmdb
+│   │   │   ├── CMakeLists.txt
+│   │   │   ├── TmdbTvEpisodeParser.h
+│   │   │   ├── TmdbTvEpisodeScrapeJob.h
+│   │   │   ├── TmdbTv.h
+│   │   │   ├── TmdbTvSeasonParser.h
+│   │   │   ├── TmdbTvSeasonScrapeJob.h
+│   │   │   ├── TmdbTvShowParser.h
+│   │   │   ├── TmdbTvShowScrapeJob.h
+│   │   │   └── TmdbTvShowSearchJob.h
+│   │   ├── tvmaze
+│   │   │   ├── CMakeLists.txt
+│   │   │   ├── TvMazeApi.h
+│   │   │   ├── TvMazeEpisodeParser.h
+│   │   │   ├── TvMazeEpisodeScrapeJob.h
+│   │   │   ├── TvMaze.h
+│   │   │   ├── TvMazeSeasonScrapeJob.h
+│   │   │   ├── TvMazeShowParser.h
+│   │   │   ├── TvMazeShowScrapeJob.h
+│   │   │   └── TvMazeShowSearchJob.h
+│   │   ├── TvScraper.h
+│   │   └── TvScraperInterface.h
+│   └── TvShowUpdater.h
+├── settings
+│   ├── AdvancedSettings.h
+│   ├── AdvancedSettingsXmlReader.h
+│   ├── CMakeLists.txt
+│   ├── DataFile.h
+│   ├── DirectorySettings.h
+│   ├── ImportSettings.h
+│   ├── KodiSettings.h
+│   ├── NetworkSettings.h
+│   ├── ScraperSettings.h
+│   └── Settings.h
+├── structure.txt
+├── ui
+│   ├── base.css
+│   ├── CMakeLists.txt
+│   ├── concerts
+│   │   ├── CMakeLists.txt
+│   │   ├── ConcertFilesWidget.h
+│   │   ├── ConcertFilesWidget.ui
+│   │   ├── ConcertInfoWidget.h
+│   │   ├── ConcertInfoWidget.ui
+│   │   ├── ConcertSearch.h
+│   │   ├── ConcertSearch.ui
+│   │   ├── ConcertSearchWidget.h
+│   │   ├── ConcertSearchWidget.ui
+│   │   ├── ConcertStreamDetailsWidget.h
+│   │   ├── ConcertStreamDetailsWidget.ui
+│   │   ├── ConcertWidget.h
+│   │   └── ConcertWidget.ui
+│   ├── dark.css
+│   ├── export
+│   │   ├── CMakeLists.txt
+│   │   ├── csv_export
+│   │   │   ├── CsvExportConfiguration.h
+│   │   │   ├── CsvExportDialog.h
+│   │   │   ├── CsvExportDialog.ui
+│   │   │   └── CsvExportModule.h
+│   │   ├── ExportDialog.h
+│   │   └── ExportDialog.ui
+│   ├── image
+│   │   ├── CMakeLists.txt
+│   │   ├── ImageDialog.h
+│   │   ├── ImageDialog.ui
+│   │   ├── ImagePreviewDialog.h
+│   │   └── ImagePreviewDialog.ui
+│   ├── import
+│   │   ├── CMakeLists.txt
+│   │   ├── DownloadsWidget.h
+│   │   ├── DownloadsWidget.ui
+│   │   ├── ImportActions.h
+│   │   ├── ImportActions.ui
+│   │   ├── ImportDialog.h
+│   │   ├── ImportDialog.ui
+│   │   ├── MakeMkvDialog.h
+│   │   ├── MakeMkvDialog.ui
+│   │   ├── UnpackButtons.h
+│   │   └── UnpackButtons.ui
+│   ├── light.css
+│   ├── MacUiUtilities.h
+│   ├── MacUiUtilities.mm
+│   ├── main
+│   │   ├── AboutDialog.h
+│   │   ├── AboutDialog.ui
+│   │   ├── CMakeLists.txt
+│   │   ├── FileScannerDialog.h
+│   │   ├── FileScannerDialog.ui
+│   │   ├── MainWindow.h
+│   │   ├── MainWindow.ui
+│   │   ├── Message.h
+│   │   ├── Message.ui
+│   │   ├── MyIconFont.h
+│   │   ├── Navbar.h
+│   │   ├── Navbar.ui
+│   │   ├── QuickOpen.h
+│   │   └── Update.h
+│   ├── media_center
+│   │   ├── KodiSync.h
+│   │   └── KodiSync.ui
+│   ├── movies
+│   │   ├── CertificationWidget.h
+│   │   ├── CertificationWidget.ui
+│   │   ├── CMakeLists.txt
+│   │   ├── GenreWidget.h
+│   │   ├── GenreWidget.ui
+│   │   ├── MovieDuplicateItem.h
+│   │   ├── MovieDuplicateItem.ui
+│   │   ├── MovieDuplicates.h
+│   │   ├── MovieDuplicates.ui
+│   │   ├── MovieFilesWidget.h
+│   │   ├── MovieFilesWidget.ui
+│   │   ├── MovieMultiScrapeDialog.h
+│   │   ├── MovieMultiScrapeDialog.ui
+│   │   ├── MoviePreviewAdapter.h
+│   │   ├── MovieSearch.h
+│   │   ├── MovieSearch.ui
+│   │   ├── MovieSearchWidget.h
+│   │   ├── MovieSearchWidget.ui
+│   │   ├── MovieWidget.h
+│   │   └── MovieWidget.ui
+│   ├── movie_sets
+│   │   ├── MovieListDialog.h
+│   │   ├── MovieListDialog.ui
+│   │   ├── SetsWidget.h
+│   │   └── SetsWidget.ui
+│   ├── music
+│   │   ├── CMakeLists.txt
+│   │   ├── MusicFilesWidget.h
+│   │   ├── MusicFilesWidget.ui
+│   │   ├── MusicMultiScrapeDialog.h
+│   │   ├── MusicMultiScrapeDialog.ui
+│   │   ├── MusicSearch.h
+│   │   ├── MusicSearch.ui
+│   │   ├── MusicSearchWidget.h
+│   │   ├── MusicSearchWidget.ui
+│   │   ├── MusicWidgetAlbum.h
+│   │   ├── MusicWidgetAlbum.ui
+│   │   ├── MusicWidgetArtist.h
+│   │   ├── MusicWidgetArtist.ui
+│   │   ├── MusicWidget.h
+│   │   └── MusicWidget.ui
+│   ├── notifications
+│   │   ├── CMakeLists.txt
+│   │   ├── MacNotificationHandler.h
+│   │   ├── MacNotificationHandler.mm
+│   │   ├── NotificationBox.h
+│   │   ├── NotificationBox.ui
+│   │   └── Notificator.h
+│   ├── palette_dark.json
+│   ├── palette_light.json
+│   ├── renamer
+│   │   ├── CMakeLists.txt
+│   │   ├── RenamerDialog.h
+│   │   ├── RenamerDialog.ui
+│   │   ├── RenamerPlaceholders.h
+│   │   └── RenamerPlaceholders.ui
+│   ├── settings
+│   │   ├── CMakeLists.txt
+│   │   ├── ConcertSettingsWidget.h
+│   │   ├── ConcertSettingsWidget.ui
+│   │   ├── CustomTvScraperSettingsWidget.h
+│   │   ├── CustomTvScraperSettingsWidget.ui
+│   │   ├── ExportSettingsWidget.h
+│   │   ├── ExportSettingsWidget.ui
+│   │   ├── ExportTemplateWidget.h
+│   │   ├── ExportTemplateWidget.ui
+│   │   ├── GlobalSettingsWidget.h
+│   │   ├── GlobalSettingsWidget.ui
+│   │   ├── ImportSettingsWidget.h
+│   │   ├── ImportSettingsWidget.ui
+│   │   ├── KodiSettingsWidget.h
+│   │   ├── KodiSettingsWidget.ui
+│   │   ├── MovieSettingsWidget.h
+│   │   ├── MovieSettingsWidget.ui
+│   │   ├── MusicSettingsWidget.h
+│   │   ├── MusicSettingsWidget.ui
+│   │   ├── NetworkSettingsWidget.h
+│   │   ├── NetworkSettingsWidget.ui
+│   │   ├── ScraperSettingsWidget.h
+│   │   ├── ScraperSettingsWidget.ui
+│   │   ├── SettingsWindow.h
+│   │   ├── SettingsWindow.ui
+│   │   ├── TvScraperSettingsWidget.h
+│   │   ├── TvScraperSettingsWidget.ui
+│   │   ├── TvShowSettingsWidget.h
+│   │   └── TvShowSettingsWidget.ui
+│   ├── small_widgets
+│   │   ├── ActorsWidget.h
+│   │   ├── ActorsWidget.ui
+│   │   ├── AlphabeticalList.h
+│   │   ├── Badge.h
+│   │   ├── ClosableImage.h
+│   │   ├── CMakeLists.txt
+│   │   ├── ComboDelegate.h
+│   │   ├── FilterWidget.h
+│   │   ├── FilterWidget.ui
+│   │   ├── ImageGallery.h
+│   │   ├── ImageLabel.h
+│   │   ├── ImageLabel.ui
+│   │   ├── LanguageCombo.h
+│   │   ├── LoadingStreamDetails.h
+│   │   ├── LoadingStreamDetails.ui
+│   │   ├── MediaFlags.h
+│   │   ├── MediaFlags.ui
+│   │   ├── MessageLabel.h
+│   │   ├── MusicTreeView.h
+│   │   ├── MyCheckBox.h
+│   │   ├── MyLabel.h
+│   │   ├── MyLineEdit.h
+│   │   ├── MySpinBox.h
+│   │   ├── MySplitter.h
+│   │   ├── MySplitterHandle.h
+│   │   ├── MyTableView.h
+│   │   ├── MyTableWidget.h
+│   │   ├── MyTableWidgetItem.h
+│   │   ├── MyTreeView.h
+│   │   ├── MyWidget.h
+│   │   ├── PlaceholderLineEdit.h
+│   │   ├── RatingSourceDelegate.h
+│   │   ├── RatingsWidget.h
+│   │   ├── RatingsWidget.ui
+│   │   ├── ScrapePreview.h
+│   │   ├── ScrapePreview.ui
+│   │   ├── SearchOverlay.h
+│   │   ├── SlidingStackedWidget.h
+│   │   ├── SpinBoxDelegate.h
+│   │   ├── StereoModeComboBox.h
+│   │   ├── TagCloud.h
+│   │   ├── TagCloud.ui
+│   │   ├── TvShowTreeView.h
+│   │   ├── WebImageLabel.h
+│   │   └── WebImageLabel.ui
+│   ├── support
+│   │   ├── SupportDialog.h
+│   │   └── SupportDialog.ui
+│   ├── trailer
+│   │   ├── TrailerDialog.h
+│   │   └── TrailerDialog.ui
+│   ├── tv_show
+│   │   ├── CMakeLists.txt
+│   │   ├── search_dialog
+│   │   │   └── TvShowPreviewAdapter.h
+│   │   ├── TvShowCommonWidgets.h
+│   │   ├── TvShowFilesWidget.h
+│   │   ├── TvShowFilesWidget.ui
+│   │   ├── TvShowMultiScrapeDialog.h
+│   │   ├── TvShowMultiScrapeDialog.ui
+│   │   ├── TvShowSearch.h
+│   │   ├── TvShowSearch.ui
+│   │   ├── TvShowSearchWidget.h
+│   │   ├── TvShowSearchWidget.ui
+│   │   ├── TvShowWidgetEpisode.h
+│   │   ├── TvShowWidgetEpisode.ui
+│   │   ├── TvShowWidget.h
+│   │   ├── TvShowWidgetSeason.h
+│   │   ├── TvShowWidgetSeason.ui
+│   │   ├── TvShowWidgetTvShow.h
+│   │   ├── TvShowWidgetTvShow.ui
+│   │   ├── TvShowWidget.ui
+│   │   ├── TvTunesDialog.h
+│   │   └── TvTunesDialog.ui
+│   └── UiUtils.h
+├── utils
+│   ├── CMakeLists.txt
+│   ├── Containers.h
+│   ├── Math.h
+│   ├── Meta.h
+│   ├── Random.h
+│   └── Time.h
+└── workers
+    ├── CMakeLists.txt
+    └── Job.h
+
+69 directories, 870 files

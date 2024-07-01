@@ -1,0 +1,51 @@
+
+core/
+    domain/
+        Movie
+        TV Show
+        …
+    settings/
+        SettingsModule
+        SettingsRegistry
+    scrapers/
+        ScraperModule
+        movie/
+            MovieScraperManager
+            tmdb/
+            imdb/
+            …
+        tv/
+            …
+    database/
+        Database
+        DatabaseSettings  # typed wrapper around settings; registers itself in settings module via init method
+        MovieDatabase # typed wrapper around database
+        TvDatabase
+        …
+    exporter/
+        NfoExporter
+        CsvExporter
+        DatabaseSettings  # typed wrapper around settings; registers itself in settings module via init method
+        MovieCsvExporter
+        …
+    importer/
+        …
+    file_search/      #   Sollte nur per Event mit Datenbank verbunden sein
+        FileSearcher
+        FileSearcherSettings  # typed wrapper around settings; registers itself in settings module via init method
+        MovieFileSearcher
+        …
+
+    file_manager/
+        nutzt file_search und verbindet es mit database/
+
+app/
+    settings/
+        SettingsWidget
+    movie/
+        MovieWidget        # main
+        MovieFilesWidget
+        MovieEditWidget    # braucht event listener, wenn sich was ändert
+    MainWindow/
+
+
