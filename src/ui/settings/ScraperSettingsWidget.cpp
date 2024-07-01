@@ -114,7 +114,7 @@ ScraperSettingsWidget::~ScraperSettingsWidget()
 void ScraperSettingsWidget::setSettings(Settings& settings)
 {
     m_settings = &settings;
-    ui->tvScraperSettings->setSettings(settings);
+    // FIXME ui->tvScraperSettings->setSettings(settings);
     ui->customTvScraperSettings->setSettings(settings);
 }
 
@@ -165,7 +165,7 @@ void ScraperSettingsWidget::loadSettings()
         ui->customScraperTable->setCellWidget(row, 1, comboForMovieScraperInfo(info));
     }
 
-    ui->tvScraperSettings->loadSettings();
+    ui->tvScraperSettings->setScrapers(Manager::instance()->scrapers().allTvScrapers());
     ui->customTvScraperSettings->loadSettings();
 
     onShowAdultScrapers();
@@ -185,7 +185,7 @@ void ScraperSettingsWidget::onSaveSettings()
     }
     m_settings->setCustomMovieScraper(customMovieScraper);
 
-    ui->tvScraperSettings->saveSettings();
+    // ui->tvScraperSettings->saveSettings();
     ui->customTvScraperSettings->saveSettings();
 }
 

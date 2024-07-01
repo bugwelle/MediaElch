@@ -2,6 +2,7 @@ add_library(
   mediaelch_ui_scrapers OBJECT
   ScraperManager.cpp movie/AebnConfigurationView.cpp
   movie/TmdbMovieConfigurationView.cpp movie/ImdbMovieConfigurationView.cpp
+  tv_show/TmdbTvConfigurationView.cpp
 )
 
 target_link_libraries(

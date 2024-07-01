@@ -68,8 +68,6 @@ TmdbMovie::TmdbMovie(TmdbMovieConfiguration& settings, QObject* parent) :
         MovieScraperInfo::CdArt,
         MovieScraperInfo::ClearArt,
         MovieScraperInfo::Set};
-    // For officially supported languages, see:
-    // https://developers.themoviedb.org/3/configuration/get-primary-translations
     m_meta.supportedLanguages = TmdbMovieConfiguration::supportedLanguages();
     m_meta.defaultLocale = TmdbMovieConfiguration::defaultLocale();
     m_meta.isAdult = false;

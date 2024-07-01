@@ -345,6 +345,7 @@ SOURCES += src/main.cpp \
     src/scrapers/tv_show/tmdb/TmdbTvSeasonScrapeJob.cpp \
     src/scrapers/tv_show/tmdb/TmdbTvShowParser.cpp \
     src/scrapers/tv_show/tmdb/TmdbTvShowScrapeJob.cpp \
+    src/scrapers/tv_show/tmdb/TmdbTvConfiguration.cpp \
     src/scrapers/tv_show/tmdb/TmdbTvShowSearchJob.cpp \
     src/scrapers/tv_show/tvmaze/TvMaze.cpp \
     src/scrapers/tv_show/tvmaze/TvMazeApi.cpp \
@@ -429,6 +430,7 @@ SOURCES += src/main.cpp \
     src/ui/settings/ScraperSettingsWidget.cpp \
     src/ui/settings/SettingsWindow.cpp \
     src/ui/settings/TvScraperSettingsWidget.cpp \
+    src/ui/settings/TvScraperInfoWidget.cpp \
     src/ui/settings/TvShowSettingsWidget.cpp \
     src/ui/small_widgets/ActorsWidget.cpp \
     src/ui/small_widgets/AlphabeticalList.cpp \
@@ -716,6 +718,7 @@ HEADERS  += Version.h \
     src/scrapers/tv_show/tmdb/TmdbTvSeasonScrapeJob.h \
     src/scrapers/tv_show/tmdb/TmdbTvShowParser.h \
     src/scrapers/tv_show/tmdb/TmdbTvShowScrapeJob.h \
+    src/scrapers/tv_show/tmdb/TmdbTvConfiguration.h \
     src/scrapers/tv_show/tmdb/TmdbTvShowSearchJob.h \
     src/scrapers/tv_show/tvmaze/TvMaze.h \
     src/scrapers/tv_show/tvmaze/TvMazeApi.h \
@@ -800,6 +803,7 @@ HEADERS  += Version.h \
     src/ui/settings/ScraperSettingsWidget.h \
     src/ui/settings/SettingsWindow.h \
     src/ui/settings/TvScraperSettingsWidget.h \
+    src/ui/settings/TvScraperInfoWidget.h \
     src/ui/settings/TvShowSettingsWidget.h \
     src/ui/small_widgets/ActorsWidget.h \
     src/ui/small_widgets/AlphabeticalList.h \
@@ -913,6 +917,7 @@ FORMS += src/ui/concerts/ConcertFilesWidget.ui \
     src/ui/settings/ScraperSettingsWidget.ui \
     src/ui/settings/SettingsWindow.ui \
     src/ui/settings/TvScraperSettingsWidget.ui \
+    src/ui/settings/TvScraperInfoWidget.ui \
     src/ui/settings/TvShowSettingsWidget.ui \
     src/ui/small_widgets/ActorsWidget.ui \
     src/ui/small_widgets/FilterWidget.ui \

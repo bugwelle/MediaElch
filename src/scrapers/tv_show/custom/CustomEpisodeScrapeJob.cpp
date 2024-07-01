@@ -15,7 +15,7 @@
 namespace mediaelch {
 namespace scraper {
 
-CustomEpisodeScrapeJob::CustomEpisodeScrapeJob(CustomTvScraperConfig customConfig,
+CustomEpisodeScrapeJob::CustomEpisodeScrapeJob(CustomTvScraperConfiguration customConfig,
     EpisodeScrapeJob::Config config,
     QObject* parent) :
     EpisodeScrapeJob(config, parent), m_customConfig{std::move(customConfig)}

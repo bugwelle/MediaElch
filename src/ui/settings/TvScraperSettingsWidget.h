@@ -2,6 +2,7 @@
 
 #include "data/Locale.h"
 #include "scrapers/ScraperInfos.h"
+#include "ui/scrapers/ScraperManager.h"
 
 #include <QListWidgetItem>
 #include <QString>
@@ -11,15 +12,6 @@ namespace Ui {
 class TvScraperSettingsWidget;
 }
 
-namespace mediaelch {
-namespace scraper {
-class TvScraper;
-}
-} // namespace mediaelch
-
-class Settings;
-class ScraperSettings;
-
 class TvScraperSettingsWidget : public QWidget
 {
     Q_OBJECT
@@ -28,21 +20,9 @@ public:
     explicit TvScraperSettingsWidget(QWidget* parent = nullptr);
     ~TvScraperSettingsWidget() override;
 
-    void setSettings(Settings& settings);
+    void setScrapers(const std::vector<mediaelch::ManagedTvScraper>& scrapers);
     void loadSettings();
-    void saveSettings();
-
-private slots:
-    void scraperChanged(QListWidgetItem* current, QListWidgetItem* previous);
-    void onLanguageChanged();
-
-private:
-    ScraperSettings* currentSettings();
-    void setupScraperDetails();
-    void setupLanguageBox();
 
 private:
     Ui::TvScraperSettingsWidget* ui = nullptr;
-    Settings* m_settings = nullptr;
-    mediaelch::scraper::TvScraper* m_currentScraper = nullptr;
 };
