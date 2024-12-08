@@ -7008,154 +7008,154 @@ Se vuoi cercare per un ID di TMDb inizia la stringa con &quot;id&quot;.</transla
     </message>
 </context>
 <context>
-    <name>RenamerPlaceholders</name>
+    <name>RenamerPlaceholdersWidget</name>
     <message>
-        <location filename="../../src/ui/renamer/RenamerPlaceholders.ui" line="35"/>
+        <location filename="../../src/ui/renamer/RenamerPlaceholdersWidget.ui" line="35"/>
         <source>Placeholders</source>
         <translation>Segnaposto</translation>
     </message>
     <message>
-        <location filename="../../src/ui/renamer/RenamerPlaceholders.ui" line="281"/>
+        <location filename="../../src/ui/renamer/RenamerPlaceholdersWidget.ui" line="281"/>
         <source>Placeholder</source>
         <translation>Segnaposto</translation>
     </message>
     <message>
-        <location filename="../../src/ui/renamer/RenamerPlaceholders.ui" line="644"/>
+        <location filename="../../src/ui/renamer/RenamerPlaceholdersWidget.ui" line="644"/>
         <source>Artist</source>
         <translation>Artista</translation>
     </message>
     <message>
-        <location filename="../../src/ui/renamer/RenamerPlaceholders.ui" line="93"/>
+        <location filename="../../src/ui/renamer/RenamerPlaceholdersWidget.ui" line="93"/>
         <source>File extension</source>
         <translation>Estensione file</translation>
     </message>
     <message>
-        <location filename="../../src/ui/renamer/RenamerPlaceholders.ui" line="463"/>
+        <location filename="../../src/ui/renamer/RenamerPlaceholdersWidget.ui" line="463"/>
         <source>Original Title</source>
         <translation>Titolo originale</translation>
     </message>
     <message>
-        <location filename="../../src/ui/renamer/RenamerPlaceholders.ui" line="489"/>
+        <location filename="../../src/ui/renamer/RenamerPlaceholdersWidget.ui" line="489"/>
         <source>Season Name</source>
         <translation>Nome Stagione</translation>
     </message>
     <message>
-        <location filename="../../src/ui/renamer/RenamerPlaceholders.ui" line="697"/>
+        <location filename="../../src/ui/renamer/RenamerPlaceholdersWidget.ui" line="697"/>
         <source>Part number of the current file</source>
         <translation>Numero parte del file corrente</translation>
     </message>
     <message>
-        <location filename="../../src/ui/renamer/RenamerPlaceholders.ui" line="829"/>
+        <location filename="../../src/ui/renamer/RenamerPlaceholdersWidget.ui" line="829"/>
         <source>TMDb ID</source>
         <translation>TMDb ID</translation>
     </message>
     <message>
-        <location filename="../../src/ui/renamer/RenamerPlaceholders.ui" line="192"/>
+        <location filename="../../src/ui/renamer/RenamerPlaceholdersWidget.ui" line="192"/>
         <source>Album</source>
         <translation>Album</translation>
     </message>
     <message>
-        <location filename="../../src/ui/renamer/RenamerPlaceholders.ui" line="107"/>
+        <location filename="../../src/ui/renamer/RenamerPlaceholdersWidget.ui" line="107"/>
         <source>Title</source>
         <translation>Titolo</translation>
     </message>
     <message>
-        <location filename="../../src/ui/renamer/RenamerPlaceholders.ui" line="773"/>
+        <location filename="../../src/ui/renamer/RenamerPlaceholdersWidget.ui" line="773"/>
         <source>Season Number</source>
         <translation>Numero stagione</translation>
     </message>
     <message>
-        <location filename="../../src/ui/renamer/RenamerPlaceholders.ui" line="81"/>
+        <location filename="../../src/ui/renamer/RenamerPlaceholdersWidget.ui" line="81"/>
         <source>Title of the show</source>
         <translation>Titolo</translation>
     </message>
     <message>
-        <location filename="../../src/ui/renamer/RenamerPlaceholders.ui" line="799"/>
+        <location filename="../../src/ui/renamer/RenamerPlaceholdersWidget.ui" line="799"/>
         <source>Year</source>
         <translation>Anno</translation>
     </message>
     <message>
-        <location filename="../../src/ui/renamer/RenamerPlaceholders.ui" line="138"/>
+        <location filename="../../src/ui/renamer/RenamerPlaceholdersWidget.ui" line="138"/>
         <source>Description</source>
         <translation>Descrizione</translation>
     </message>
     <message>
-        <location filename="../../src/ui/renamer/RenamerPlaceholders.ui" line="673"/>
+        <location filename="../../src/ui/renamer/RenamerPlaceholdersWidget.ui" line="673"/>
         <source>Studio(s) (separated by a comma)</source>
         <translation>Studio (separati da virgola)</translation>
     </message>
     <message>
-        <location filename="../../src/ui/renamer/RenamerPlaceholders.ui" line="595"/>
+        <location filename="../../src/ui/renamer/RenamerPlaceholdersWidget.ui" line="595"/>
         <source>Sort Title</source>
         <translation>Titolo per ordinamento</translation>
     </message>
     <message>
-        <location filename="../../src/ui/renamer/RenamerPlaceholders.ui" line="501"/>
+        <location filename="../../src/ui/renamer/RenamerPlaceholdersWidget.ui" line="501"/>
         <source>Director(s)</source>
         <translation>Regista(i)</translation>
     </message>
     <message>
-        <location filename="../../src/ui/renamer/RenamerPlaceholders.ui" line="637"/>
+        <location filename="../../src/ui/renamer/RenamerPlaceholdersWidget.ui" line="637"/>
         <source>Audio Language(s) (separated by a minus)</source>
         <translation>Lingue Audio (separate da trattino)</translation>
     </message>
     <message>
-        <location filename="../../src/ui/renamer/RenamerPlaceholders.ui" line="530"/>
+        <location filename="../../src/ui/renamer/RenamerPlaceholdersWidget.ui" line="530"/>
         <source>Episode Number</source>
         <translation>Numero episodio</translation>
     </message>
     <message>
-        <location filename="../../src/ui/renamer/RenamerPlaceholders.ui" line="163"/>
+        <location filename="../../src/ui/renamer/RenamerPlaceholdersWidget.ui" line="163"/>
         <source>Resolution (1080p, 720p, ...)</source>
         <translation>Risoluzione (1080p, 720p, ...)</translation>
     </message>
     <message>
-        <location filename="../../src/ui/renamer/RenamerPlaceholders.ui" line="231"/>
+        <location filename="../../src/ui/renamer/RenamerPlaceholdersWidget.ui" line="231"/>
         <source>File/directory is BluRay</source>
         <translation>File/Cartella è un BluRay</translation>
     </message>
     <message>
-        <location filename="../../src/ui/renamer/RenamerPlaceholders.ui" line="426"/>
+        <location filename="../../src/ui/renamer/RenamerPlaceholdersWidget.ui" line="426"/>
         <source>Subtitle Language(s) (separated by a minus)</source>
         <translation>Lingue sottotitoli (separate da trattino)</translation>
     </message>
     <message>
-        <location filename="../../src/ui/renamer/RenamerPlaceholders.ui" line="68"/>
+        <location filename="../../src/ui/renamer/RenamerPlaceholdersWidget.ui" line="68"/>
         <source>File/directory is DVD</source>
         <translation>File/Cartella è un DVD</translation>
     </message>
     <message>
-        <location filename="../../src/ui/renamer/RenamerPlaceholders.ui" line="475"/>
+        <location filename="../../src/ui/renamer/RenamerPlaceholdersWidget.ui" line="475"/>
         <source>File is 3D</source>
         <translation>File è in 3D</translation>
     </message>
     <message>
-        <location filename="../../src/ui/renamer/RenamerPlaceholders.ui" line="121"/>
+        <location filename="../../src/ui/renamer/RenamerPlaceholdersWidget.ui" line="121"/>
         <source>Movie set name</source>
         <translation>Nome del Gruppo di Film</translation>
     </message>
     <message>
-        <location filename="../../src/ui/renamer/RenamerPlaceholders.ui" line="414"/>
+        <location filename="../../src/ui/renamer/RenamerPlaceholdersWidget.ui" line="414"/>
         <source>IMDb ID</source>
         <translation>IMDb ID</translation>
     </message>
     <message>
-        <location filename="../../src/ui/renamer/RenamerPlaceholders.ui" line="385"/>
+        <location filename="../../src/ui/renamer/RenamerPlaceholdersWidget.ui" line="385"/>
         <source>Video Codec</source>
         <translation>Codec Video</translation>
     </message>
     <message>
-        <location filename="../../src/ui/renamer/RenamerPlaceholders.ui" line="204"/>
+        <location filename="../../src/ui/renamer/RenamerPlaceholdersWidget.ui" line="204"/>
         <source>Episode has a season name</source>
         <translation>L&apos;episodio ha un nome di stagione</translation>
     </message>
     <message>
-        <location filename="../../src/ui/renamer/RenamerPlaceholders.ui" line="342"/>
+        <location filename="../../src/ui/renamer/RenamerPlaceholdersWidget.ui" line="342"/>
         <source>Audio Codec</source>
         <translation>Codec Audio</translation>
     </message>
     <message>
-        <location filename="../../src/ui/renamer/RenamerPlaceholders.ui" line="566"/>
+        <location filename="../../src/ui/renamer/RenamerPlaceholdersWidget.ui" line="566"/>
         <source>Number of audio channels</source>
         <translation>Numero di canali audio</translation>
     </message>

@@ -6989,154 +6989,154 @@ If you want to search by an TMDb id please prefix it with &quot;id&quot;.</sourc
     </message>
 </context>
 <context>
-    <name>RenamerPlaceholders</name>
+    <name>RenamerPlaceholdersWidget</name>
     <message>
-        <location filename="../../src/ui/renamer/RenamerPlaceholders.ui" line="35"/>
+        <location filename="../../src/ui/renamer/RenamerPlaceholdersWidget.ui" line="35"/>
         <source>Placeholders</source>
         <translation>占位符</translation>
     </message>
     <message>
-        <location filename="../../src/ui/renamer/RenamerPlaceholders.ui" line="281"/>
+        <location filename="../../src/ui/renamer/RenamerPlaceholdersWidget.ui" line="281"/>
         <source>Placeholder</source>
         <translation>占位符</translation>
     </message>
     <message>
-        <location filename="../../src/ui/renamer/RenamerPlaceholders.ui" line="644"/>
+        <location filename="../../src/ui/renamer/RenamerPlaceholdersWidget.ui" line="644"/>
         <source>Artist</source>
         <translation>艺术家</translation>
     </message>
     <message>
-        <location filename="../../src/ui/renamer/RenamerPlaceholders.ui" line="93"/>
+        <location filename="../../src/ui/renamer/RenamerPlaceholdersWidget.ui" line="93"/>
         <source>File extension</source>
         <translation>扩展名</translation>
     </message>
     <message>
-        <location filename="../../src/ui/renamer/RenamerPlaceholders.ui" line="463"/>
+        <location filename="../../src/ui/renamer/RenamerPlaceholdersWidget.ui" line="463"/>
         <source>Original Title</source>
         <translation>原始片名</translation>
     </message>
     <message>
-        <location filename="../../src/ui/renamer/RenamerPlaceholders.ui" line="489"/>
+        <location filename="../../src/ui/renamer/RenamerPlaceholdersWidget.ui" line="489"/>
         <source>Season Name</source>
         <translation>季名称</translation>
     </message>
     <message>
-        <location filename="../../src/ui/renamer/RenamerPlaceholders.ui" line="697"/>
+        <location filename="../../src/ui/renamer/RenamerPlaceholdersWidget.ui" line="697"/>
         <source>Part number of the current file</source>
         <translation>多文件视频重命名序号</translation>
     </message>
     <message>
-        <location filename="../../src/ui/renamer/RenamerPlaceholders.ui" line="829"/>
+        <location filename="../../src/ui/renamer/RenamerPlaceholdersWidget.ui" line="829"/>
         <source>TMDb ID</source>
         <translation>TMDb ID</translation>
     </message>
     <message>
-        <location filename="../../src/ui/renamer/RenamerPlaceholders.ui" line="192"/>
+        <location filename="../../src/ui/renamer/RenamerPlaceholdersWidget.ui" line="192"/>
         <source>Album</source>
         <translation>专辑</translation>
     </message>
     <message>
-        <location filename="../../src/ui/renamer/RenamerPlaceholders.ui" line="107"/>
+        <location filename="../../src/ui/renamer/RenamerPlaceholdersWidget.ui" line="107"/>
         <source>Title</source>
         <translation>片名</translation>
     </message>
     <message>
-        <location filename="../../src/ui/renamer/RenamerPlaceholders.ui" line="773"/>
+        <location filename="../../src/ui/renamer/RenamerPlaceholdersWidget.ui" line="773"/>
         <source>Season Number</source>
         <translation>季序号</translation>
     </message>
     <message>
-        <location filename="../../src/ui/renamer/RenamerPlaceholders.ui" line="81"/>
+        <location filename="../../src/ui/renamer/RenamerPlaceholdersWidget.ui" line="81"/>
         <source>Title of the show</source>
         <translation>节目名称</translation>
     </message>
     <message>
-        <location filename="../../src/ui/renamer/RenamerPlaceholders.ui" line="799"/>
+        <location filename="../../src/ui/renamer/RenamerPlaceholdersWidget.ui" line="799"/>
         <source>Year</source>
         <translation>年份</translation>
     </message>
     <message>
-        <location filename="../../src/ui/renamer/RenamerPlaceholders.ui" line="138"/>
+        <location filename="../../src/ui/renamer/RenamerPlaceholdersWidget.ui" line="138"/>
         <source>Description</source>
         <translation>说明</translation>
     </message>
     <message>
-        <location filename="../../src/ui/renamer/RenamerPlaceholders.ui" line="673"/>
+        <location filename="../../src/ui/renamer/RenamerPlaceholdersWidget.ui" line="673"/>
         <source>Studio(s) (separated by a comma)</source>
         <translation>制片公司（用逗号分隔）</translation>
     </message>
     <message>
-        <location filename="../../src/ui/renamer/RenamerPlaceholders.ui" line="595"/>
+        <location filename="../../src/ui/renamer/RenamerPlaceholdersWidget.ui" line="595"/>
         <source>Sort Title</source>
         <translation>排序片名</translation>
     </message>
     <message>
-        <location filename="../../src/ui/renamer/RenamerPlaceholders.ui" line="501"/>
+        <location filename="../../src/ui/renamer/RenamerPlaceholdersWidget.ui" line="501"/>
         <source>Director(s)</source>
         <translation>导演</translation>
     </message>
     <message>
-        <location filename="../../src/ui/renamer/RenamerPlaceholders.ui" line="637"/>
+        <location filename="../../src/ui/renamer/RenamerPlaceholdersWidget.ui" line="637"/>
         <source>Audio Language(s) (separated by a minus)</source>
         <translation>音频语言（以减号分隔）</translation>
     </message>
     <message>
-        <location filename="../../src/ui/renamer/RenamerPlaceholders.ui" line="530"/>
+        <location filename="../../src/ui/renamer/RenamerPlaceholdersWidget.ui" line="530"/>
         <source>Episode Number</source>
         <translation>剧集序号</translation>
     </message>
     <message>
-        <location filename="../../src/ui/renamer/RenamerPlaceholders.ui" line="163"/>
+        <location filename="../../src/ui/renamer/RenamerPlaceholdersWidget.ui" line="163"/>
         <source>Resolution (1080p, 720p, ...)</source>
         <translation>分辨率(1080p, 720p, ...)</translation>
     </message>
     <message>
-        <location filename="../../src/ui/renamer/RenamerPlaceholders.ui" line="231"/>
+        <location filename="../../src/ui/renamer/RenamerPlaceholdersWidget.ui" line="231"/>
         <source>File/directory is BluRay</source>
         <translation>文件/目录是BluRay</translation>
     </message>
     <message>
-        <location filename="../../src/ui/renamer/RenamerPlaceholders.ui" line="426"/>
+        <location filename="../../src/ui/renamer/RenamerPlaceholdersWidget.ui" line="426"/>
         <source>Subtitle Language(s) (separated by a minus)</source>
         <translation>字幕语言（以减号分隔）</translation>
     </message>
     <message>
-        <location filename="../../src/ui/renamer/RenamerPlaceholders.ui" line="68"/>
+        <location filename="../../src/ui/renamer/RenamerPlaceholdersWidget.ui" line="68"/>
         <source>File/directory is DVD</source>
         <translation>文件/目录是DVD</translation>
     </message>
     <message>
-        <location filename="../../src/ui/renamer/RenamerPlaceholders.ui" line="475"/>
+        <location filename="../../src/ui/renamer/RenamerPlaceholdersWidget.ui" line="475"/>
         <source>File is 3D</source>
         <translation>文件是3D</translation>
     </message>
     <message>
-        <location filename="../../src/ui/renamer/RenamerPlaceholders.ui" line="121"/>
+        <location filename="../../src/ui/renamer/RenamerPlaceholdersWidget.ui" line="121"/>
         <source>Movie set name</source>
         <translation>系列电影名称</translation>
     </message>
     <message>
-        <location filename="../../src/ui/renamer/RenamerPlaceholders.ui" line="414"/>
+        <location filename="../../src/ui/renamer/RenamerPlaceholdersWidget.ui" line="414"/>
         <source>IMDb ID</source>
         <translation>IMDb ID</translation>
     </message>
     <message>
-        <location filename="../../src/ui/renamer/RenamerPlaceholders.ui" line="385"/>
+        <location filename="../../src/ui/renamer/RenamerPlaceholdersWidget.ui" line="385"/>
         <source>Video Codec</source>
         <translation>视频编码</translation>
     </message>
     <message>
-        <location filename="../../src/ui/renamer/RenamerPlaceholders.ui" line="204"/>
+        <location filename="../../src/ui/renamer/RenamerPlaceholdersWidget.ui" line="204"/>
         <source>Episode has a season name</source>
         <translation>剧集有一个季名称</translation>
     </message>
     <message>
-        <location filename="../../src/ui/renamer/RenamerPlaceholders.ui" line="342"/>
+        <location filename="../../src/ui/renamer/RenamerPlaceholdersWidget.ui" line="342"/>
         <source>Audio Codec</source>
         <translation>音频编码</translation>
     </message>
     <message>
-        <location filename="../../src/ui/renamer/RenamerPlaceholders.ui" line="566"/>
+        <location filename="../../src/ui/renamer/RenamerPlaceholdersWidget.ui" line="566"/>
         <source>Number of audio channels</source>
         <translation>音频声道数</translation>
     </message>
@@ -8274,14 +8274,14 @@ Afterwards MediaElch will check automatically for new episodes on startup.</sour
         <location filename="../../src/ui/tv_show/TvShowMultiScrapeDialog.ui" line="605"/>
         <source>Update only TV shows/episodes
 which have an ID</source>
-        <translation>仅更新电视节目/剧集 
+        <translation>仅更新电视节目/剧集
 有ID的</translation>
     </message>
     <message>
         <location filename="../../src/ui/tv_show/TvShowMultiScrapeDialog.ui" line="619"/>
         <source>Automatically save each TV show/
 episode after scraping</source>
-        <translation>自动保存每个电视节目/ 
+        <translation>自动保存每个电视节目/
 刮削后的剧集</translation>
     </message>
     <message>
