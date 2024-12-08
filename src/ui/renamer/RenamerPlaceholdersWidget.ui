@@ -826,7 +826,7 @@
           <item row="29" column="1">
            <widget class="QLabel" name="descTmdbId">
             <property name="text">
-             <string>TMDb ID</string>
+             <string>TMDB ID</string>
             </property>
             <property name="itemTypes" stdset="0">
              <stringlist notr="true">
