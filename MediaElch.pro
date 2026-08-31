@@ -271,8 +271,6 @@ SOURCES += \
     src/scrapers/imdb/ImdbApi.cpp \
     src/scrapers/imdb/ImdbJsonParser.cpp \
     src/scrapers/imdb/ImdbSearchPage.cpp \
-    src/scrapers/imdb/ImdbReferencePage.cpp \
-    src/scrapers/omdb/OmdbApi.cpp \
     src/scrapers/movie/adultdvdempire/AdultDvdEmpireApi.cpp \
     src/scrapers/movie/adultdvdempire/AdultDvdEmpire.cpp \
     src/scrapers/movie/adultdvdempire/AdultDvdEmpireScrapeJob.cpp \
@@ -342,11 +340,8 @@ SOURCES += \
     src/scrapers/tv_show/fernsehserien_de/FernsehserienDe.cpp \
     src/scrapers/tv_show/imdb/ImdbTvConfiguration.cpp \
     src/scrapers/tv_show/imdb/ImdbTv.cpp \
-    src/scrapers/tv_show/imdb/ImdbTvEpisodeParser.cpp \
     src/scrapers/tv_show/imdb/ImdbTvEpisodeScrapeJob.cpp \
-    src/scrapers/tv_show/imdb/ImdbTvSeasonParser.cpp \
     src/scrapers/tv_show/imdb/ImdbTvSeasonScrapeJob.cpp \
-    src/scrapers/tv_show/imdb/ImdbTvShowParser.cpp \
     src/scrapers/tv_show/imdb/ImdbTvShowScrapeJob.cpp \
     src/scrapers/tv_show/imdb/ImdbTvShowSearchJob.cpp \
     src/scrapers/tv_show/omdb/OmdbTvConfiguration.cpp \
