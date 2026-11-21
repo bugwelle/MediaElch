@@ -6,6 +6,7 @@ Table of contents:
 
  - [Test types and folder structure](#test-types-and-folder-structure)
  - [Compile and run Tests](#compile-and-run-tests)
+ - [UI test plan](#ui-test-plan)
  - [Code Coverage](#code-coverage)
  - [Other checks](#other-checks)
 
@@ -99,6 +100,83 @@ export MEDIAELCH_UPDATE_REF_FILES=1
 ninja integration_test
 ninja scraper_test
 ```
+
+
+## UI test plan
+
+The first release gate should answer a question the Kodi integration tests cannot answer on their own.
+When a user selects one of two movies, edits its title and presses Save, does the edit reach the right NFO?
+Build toward that check in three increments. Each increment should be independently runnable.
+
+### 1. Establish the widget test harness
+
+Add a proposed `test/ui/mediaelch_test_ui` executable under `ENABLE_TESTS`, with a `ui_test` convenience
+target. Follow the integration runner's Catch2 and `QApplication` setup and the unit target's linkage to
+`Qt${QT_VERSION_MAJOR}::Test`. Use Catch2 for assertions, QTest for keyboard and mouse input, and
+QSignalSpy for observable notifications. Keep this target offline.
+
+Start with `RatingsWidget`. Bind a local `Ratings` collection with one identifiable entry and show the widget.
+
+- Click Add. The new row is selected, the backing collection grows, and the widget emits `ratingsChanged`.
+- Open the new row's rating editor, type a value and commit with Return. Check the displayed value and
+  the value in the corresponding backing entry. Remove the selected row and verify the original entry survives.
+- Clear the selection, observe the signal count, then click Remove. The collection and signal count stay the same.
+
+Locate controls by widget type and existing Designer object names such as `btnAddRating`. Locate table cells
+through the view's model and visual rectangle. Send input through the control that handles it. For example,
+typing in the movie title field exercises its `textEdited` connection, which calling `setText()` would bypass.
+The first increment passes when the same cases run individually and together on Qt5 and Qt6 under Xvfb.
+
+### 2. Protect the movie edit and save workflow
+
+Prepare a fresh temporary library with two movie folders, distinct local NFO titles and matching media filenames.
+Copy source fixtures before editing. Use recognizable values for both movies so a stale selection is detectable.
+Use the production movie list, editor, Save action and Kodi writer for this workflow.
+
+| Case | User action | Evidence of success |
+| --- | --- | --- |
+| Select | Scan the temporary library, wait for both entries, select A and then B. | The editor follows each selection. Loading either movie leaves it clean. |
+| Discard an edit | Type a new title for B and click the visible Revert button. | The editor restores B's saved title, the dirty indication clears, and both NFO files retain their original contents. |
+| Save and reopen | Edit B again, invoke Save, then reopen the library with a fresh cache. | B's NFO contains the new title, the reopened editor displays it, and A's NFO remains byte-for-byte identical. |
+
+Assert the changed XML field by parsing it. The existing Kodi integration suite owns full serialization
+comparisons. Include one full-window test for list selection and action routing. Keep additional title,
+rating and validation cases in focused widgets so their failures identify the broken interaction.
+
+Before constructing `Settings::instance()`, `Manager::instance()` or the main window, direct settings,
+database, cache and library paths into a temporary profile. Verify the resolved paths, including the
+portable INI path if portable mode is active. Disable startup update checks and remote artwork requests
+in the fixture. Give each full-window scenario a fresh process if singleton state survives window teardown.
+Finish or cancel outstanding workers before deleting the library. The exit criterion is a successful
+save/reopen and revert run from an empty profile with external network access unavailable.
+
+### 3. Expand by risk
+
+| Priority | Workflow | Regression to exercise |
+| --- | --- | --- |
+| Next | Renamer preview and execution | Preview a rename in a disposable library and cancel. Verify the file tree is identical. Reopen and apply, then check the actual media and sidecar paths against the preview. |
+| Next | TV show, season and episode selection | Select two sibling episodes across a season selection, edit the second episode and save. Verify its NFO changes and the sibling and show metadata survive. |
+| Next | Scraper result selection and cancellation | Supply two fixed results at the scraper job boundary. Select the second and verify its metadata reaches the editor. Cancel a pending request and deliver a late completion. Verify the current item retains its original metadata. |
+| Next | Failed save | Arrange a deterministic write failure in the temporary library. Check that the user can identify the failure, recover the edit and retry successfully. Record a product defect if the editor silently loses the edit. |
+| Later | Settings, concerts and music | Persist a library setting across restart. Add one save/reload case each for a concert and an album, including selection of the album under the correct artist. |
+
+Add a case when a UI regression escapes or a new interaction carries a distinct risk. Keep native file
+choosers, platform shortcuts, high-DPI layouts and theme legibility on a short manual release pass on
+the supported desktops. Record the OS, Qt version and observed failure for anything that needs reproduction.
+
+### CI and failure diagnosis
+
+Jenkins builds both Qt presets and currently runs its Xvfb test commands from `build/ci`. Run the proposed
+UI executable under `xvfb-run -a` from **both** `build/ci` and `build/ci-qt6`. Give each invocation its own
+JUnit filename under the collected reports directory and use Catch2's `--warn NoTests`. Keep test discovery
+working without a display if registering cases with CTest, since discovery can run at build time.
+
+Wait for a specific signal or observable state with a bounded event-loop wait. Attach observers before the
+action so synchronous delivery is captured too. On timeout report the expected state, current selection,
+active modal dialog and Qt version. Preserve the temporary NFO files on a save failure. Use screenshots
+as diagnostic attachments when a window is visible. Before enabling the gate, repeat the suite in varied
+case order on both Qt builds, check for leaked settings or files, and record runtime. A failing first run
+should remain visible in CI even when a diagnostic rerun passes.
 
 
 ## Code Coverage

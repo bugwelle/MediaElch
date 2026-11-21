@@ -1,4 +1,4 @@
-FROM debian:bullseye
+FROM debian:trixie AS base
 
 ENV TZ=Europe/London
 
@@ -23,6 +23,8 @@ RUN apt-get update && apt-get upgrade -y && \
         bison \
         bzip2 \
         curl \
+        ca-certificates \
+        clang \
         flex \
         g++ \
         g++-multilib \
@@ -31,7 +33,10 @@ RUN apt-get update && apt-get upgrade -y && \
         gperf \
         intltool \
         libc6-dev-i386 \
-        libgdk-pixbuf2.0-dev \
+        libgdk-pixbuf-2.0-dev \
+        libclang-dev \
+        libpcre2-dev \
+        llvm-dev \
         libltdl-dev \
         libssl-dev \
         libtool-bin \
@@ -44,9 +49,14 @@ RUN apt-get update && apt-get upgrade -y && \
         perl \
         python3 \
         python3-mako \
+        python3-yaml \
+        python3-packaging \
+        python3-pkg-resources \
+        python3-setuptools \
         python-is-python3 \
         ruby \
         sed \
+        sqlite3 \
         unzip \
         wget \
         xz-utils \
@@ -58,50 +68,32 @@ RUN apt-get update && apt-get upgrade -y && \
     rm -rf /var/lib/apt/lists/*
 
 # Download MXE
+FROM base AS builder
 RUN mkdir /build
 WORKDIR /build
 RUN git clone --depth=1 https://github.com/mxe/mxe.git
 
-# Install a more recent version of autoconf, required by fontconfig
-RUN cd /build && mkdir autoconf-build && cd autoconf-build \
-    && curl --output autoconf-2.72.tar.xz https://ftp.halifax.rwth-aachen.de/gnu/autoconf/autoconf-2.72.tar.xz \
-    && tar -xvf autoconf-2.72.tar.xz \
-    && cd autoconf-2.72 \
-    && ./configure \
-    && make install \
-    && export PATH="/usr/local/bin/:$PATH"
-
-# Enhance path
-ENV PATH /build/mxe/usr/bin:$PATH
-
 # Build cross environment
 #   We build Compilers and some other libraries that are required for Qt.
-#   Note: On my system, I occasionally run into internal compiler bugs.
-#         The workaround was to build "boost" and "qtbase" in a single thread.
 #
-# Cleanup
-#   We remove some directories and run MXE's cleanup task.
-#   This reduces the image's size a lot:
-#     ./src 14 MB
-#     ./log 100 MB
-#     ./pkg 450 MB
-#     ./.git 27 MB
-#     ./.ccache 1.56 GB
-#
-RUN cd /build/mxe && make MXE_TARGETS='x86_64-w64-mingw32.shared' --jobs 4 JOBS=4 cc zlib gnutls \
-           && make MXE_TARGETS='x86_64-w64-mingw32.shared' --jobs 1 JOBS=1 boost \
-           && make MXE_TARGETS='x86_64-w64-mingw32.shared' --jobs 2 JOBS=4 mesa cmake fontconfig \
-           && make MXE_TARGETS='x86_64-w64-mingw32.shared' --jobs 1 JOBS=1 qtbase \
+# Keep common dependencies in separate layers so both Qt images can reuse them.
+RUN cd /build/mxe && make MXE_TARGETS='x86_64-w64-mingw32.shared' --jobs 4 JOBS=4 cc zlib gnutls
+RUN cd /build/mxe && make MXE_TARGETS='x86_64-w64-mingw32.shared' --jobs 2 JOBS=4 mesa cmake fontconfig
+RUN cd /build/mxe && make MXE_TARGETS='x86_64-w64-mingw32.shared' --jobs 2 JOBS=4 qtbase \
            && make MXE_TARGETS='x86_64-w64-mingw32.shared' --jobs 2 JOBS=4 qttools \
                  qtimageformats \
                  qtmultimedia \
             && make clean-junk \
             && rm -rf /build/mxe/src /build/mxe/log /build/mxe/pkg /build/mxe/.git /build/mxe/.ccache
 
-# Enhance path
-ENV PATH /build/mxe/usr/bin:$PATH
+# Keep sources, logs, downloads, and compiler caches out of the final image.
+FROM base
+COPY --from=builder /build/mxe/usr /build/mxe/usr
 
-# Add a qmake aliases
+# Enhance path
+ENV PATH=/build/mxe/usr/bin:$PATH
+
+# Add qmake and CMake aliases
 RUN ln -s /build/mxe/usr/bin/x86_64-w64-mingw32.shared-qmake-qt5 /build/mxe/usr/bin/qmake && \
     ln -s /build/mxe/usr/bin/x86_64-w64-mingw32.shared-cmake /build/mxe/usr/bin/cmake
 
