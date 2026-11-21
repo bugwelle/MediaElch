@@ -201,6 +201,13 @@ int Database::schemaVersion()
 bool Database::setupDatabase()
 {
     const int latestVersion = schemaVersion();
+    // Apply durability before migrations can write persistent preferences.
+    QSqlQuery durability(*m_db);
+    if (!durability.exec("PRAGMA synchronous=FULL")) {
+        m_initializationError = durability.lastError().text();
+        return false;
+    }
+    durability.finish();
     SqliteTransaction transaction(*m_db);
     if (!transaction.isActive()) {
         m_initializationError = "Could not start schema transaction";
@@ -255,7 +262,7 @@ bool Database::setupDatabase()
         m_initializationError = "Could not commit schema migration";
         return false;
     }
-    for (const auto& sql : {"PRAGMA synchronous=0", "PRAGMA journal_mode=WAL", "PRAGMA cache_size=20000"}) {
+    for (const auto& sql : {"PRAGMA synchronous=FULL", "PRAGMA journal_mode=WAL", "PRAGMA cache_size=20000"}) {
         if (!query.exec(sql)) {
             m_initializationError = query.lastError().text();
             return false;

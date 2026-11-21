@@ -97,3 +97,23 @@ TEST_CASE("Destroying a database owner closes its connection", "[database]")
     }
     CHECK_FALSE(connection.isOpen());
 }
+
+TEST_CASE("Every file connection uses durable WAL writes", "[database]")
+{
+    QTemporaryDir dir;
+    REQUIRE(dir.isValid());
+    const auto path = dir.filePath("cache.sqlite");
+    Database first{path};
+    Database second{path};
+    for (auto* database : {&first, &second}) {
+        REQUIRE(database->db().isOpen());
+        QSqlQuery query(database->db());
+        REQUIRE(query.exec("PRAGMA synchronous"));
+        REQUIRE(query.next());
+        CHECK(query.value(0).toInt() == 2);
+        query.finish();
+        REQUIRE(query.exec("PRAGMA journal_mode"));
+        REQUIRE(query.next());
+        CHECK(query.value(0).toString() == QStringLiteral("wal"));
+    }
+}
