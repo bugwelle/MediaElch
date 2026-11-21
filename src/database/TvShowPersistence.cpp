@@ -13,7 +13,8 @@
 
 namespace mediaelch {
 
-TvShowPersistence::TvShowPersistence(Database& db) : m_db(db)
+TvShowPersistence::TvShowPersistence(Database& db, QObject* loadedObjectParent) :
+    m_db(db), m_loadedObjectParent(loadedObjectParent)
 {
 }
 
@@ -201,7 +202,8 @@ QVector<TvShow*> TvShowPersistence::showsInDirectory(DirectoryPath path)
     query.exec();
     while (query.next()) {
         mediaelch::DirectoryPath dir(QString::fromUtf8(query.value(query.record().indexOf("dir")).toByteArray()));
-        auto* show = new TvShow(dir, Manager::instance()->tvShowFileSearcher());
+        auto* show = new TvShow(
+            dir, m_loadedObjectParent != nullptr ? m_loadedObjectParent : Manager::instance()->tvShowFileSearcher());
         show->setDatabaseId(query.value(query.record().indexOf("idShow")).toInt());
         show->setNfoContent(QString::fromUtf8(query.value(query.record().indexOf("content")).toByteArray()));
         shows.append(show);

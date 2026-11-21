@@ -14,7 +14,8 @@ namespace mediaelch {
 class MusicPersistence
 {
 public:
-    explicit MusicPersistence(Database& db);
+    /// Optional parent for loaded objects; must outlive this persistence instance.
+    explicit MusicPersistence(Database& db, QObject* loadedObjectParent = nullptr);
     virtual ~MusicPersistence() = default;
     QSqlDatabase db();
 
@@ -32,6 +33,7 @@ public:
 
 private:
     Database& m_db;
+    QObject* m_loadedObjectParent = nullptr;
 };
 
 } // namespace mediaelch

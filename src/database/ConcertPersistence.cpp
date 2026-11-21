@@ -11,7 +11,8 @@
 
 namespace mediaelch {
 
-ConcertPersistence::ConcertPersistence(Database& db) : m_db(db)
+ConcertPersistence::ConcertPersistence(Database& db, QObject* loadedObjectParent) :
+    m_db(db), m_loadedObjectParent(loadedObjectParent)
 {
 }
 
@@ -113,7 +114,8 @@ QVector<Concert*> ConcertPersistence::concertsInDirectory(DirectoryPath path)
             files << QString::fromUtf8(queryFiles.value(queryFiles.record().indexOf("file")).toByteArray());
         }
 
-        auto* concert = new Concert(files, Manager::instance()->concertFileSearcher());
+        auto* concert = new Concert(
+            files, m_loadedObjectParent != nullptr ? m_loadedObjectParent : Manager::instance()->concertFileSearcher());
         concert->setDatabaseId(query.value(query.record().indexOf("idConcert")).toInt());
         concert->setInSeparateFolder(query.value(query.record().indexOf("inSeparateFolder")).toInt() == 1);
         concert->setNfoContent(QString::fromUtf8(query.value(query.record().indexOf("content")).toByteArray()));

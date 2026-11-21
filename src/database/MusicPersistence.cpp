@@ -11,7 +11,8 @@
 
 namespace mediaelch {
 
-MusicPersistence::MusicPersistence(Database& db) : m_db(db)
+MusicPersistence::MusicPersistence(Database& db, QObject* loadedObjectParent) :
+    m_db(db), m_loadedObjectParent(loadedObjectParent)
 {
 }
 
@@ -69,7 +70,8 @@ QVector<Artist*> MusicPersistence::artistsInDirectory(DirectoryPath path)
     query.exec();
     while (query.next()) {
         mediaelch::DirectoryPath dir(QString::fromUtf8(query.value(query.record().indexOf("dir")).toByteArray()));
-        auto* artist = new Artist(dir, Manager::instance()->musicFileSearcher());
+        auto* artist = new Artist(
+            dir, m_loadedObjectParent != nullptr ? m_loadedObjectParent : Manager::instance()->musicFileSearcher());
         artist->setDatabaseId(query.value(query.record().indexOf("idArtist")).toInt());
         artist->setNfoContent(QString::fromUtf8(query.value(query.record().indexOf("content")).toByteArray()));
         artists.append(artist);
@@ -125,7 +127,8 @@ QVector<Album*> MusicPersistence::albums(Artist* artist)
     query.exec();
     while (query.next()) {
         mediaelch::DirectoryPath dir(QString::fromUtf8(query.value(query.record().indexOf("dir")).toByteArray()));
-        auto* album = new Album(dir, Manager::instance()->musicFileSearcher());
+        auto* album = new Album(
+            dir, m_loadedObjectParent != nullptr ? m_loadedObjectParent : Manager::instance()->musicFileSearcher());
         album->setDatabaseId(query.value(query.record().indexOf("idAlbum")).toInt());
         album->setNfoContent(QString::fromUtf8(query.value(query.record().indexOf("content")).toByteArray()));
         album->setArtistObj(artist);

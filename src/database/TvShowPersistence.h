@@ -16,7 +16,8 @@ namespace mediaelch {
 class TvShowPersistence
 {
 public:
-    explicit TvShowPersistence(Database& db);
+    /// Optional parent for loaded objects; must outlive this persistence instance.
+    explicit TvShowPersistence(Database& db, QObject* loadedObjectParent = nullptr);
     virtual ~TvShowPersistence() = default;
     QSqlDatabase db();
 
@@ -42,6 +43,7 @@ public:
 
 private:
     Database& m_db;
+    QObject* m_loadedObjectParent = nullptr;
 };
 
 } // namespace mediaelch

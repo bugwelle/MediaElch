@@ -4,6 +4,7 @@ target_sources(
   mediaelch_unit_test
   PRIVATE
     main.cpp
+    database/testDatabaseId.cpp
     data/testImdbId.cpp
     data/testLocale.cpp
     data/testTmdbId.cpp

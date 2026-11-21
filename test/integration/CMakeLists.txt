@@ -4,7 +4,12 @@ target_sources(
   mediaelch_test_integration
   PRIVATE
     main.cpp
+    database/testDatabase.cpp
+    database/testMediaPersistence.cpp
+    database/testMusicPersistence.cpp
+    database/testPersistence.cpp
     database/testSchema.cpp
+    database/testSqliteTransaction.cpp
     export/testSimpleExport.cpp
     file/testPath.cpp
     media_center/testKodi_v18_concert.cpp
@@ -14,7 +19,6 @@ target_sources(
     media_center/testKodi_v18_music_artist.cpp
     media_center/testKodi_v18_show.cpp
     media_center/testKodi_v20_show.cpp
-    database/testPersistence.cpp
 )
 
 target_link_libraries(

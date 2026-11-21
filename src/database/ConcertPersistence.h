@@ -13,7 +13,8 @@ namespace mediaelch {
 class ConcertPersistence
 {
 public:
-    explicit ConcertPersistence(Database& db);
+    /// Optional parent for loaded objects; must outlive this persistence instance.
+    explicit ConcertPersistence(Database& db, QObject* loadedObjectParent = nullptr);
     virtual ~ConcertPersistence() = default;
     QSqlDatabase db();
 
@@ -25,6 +26,7 @@ public:
 
 private:
     Database& m_db;
+    QObject* m_loadedObjectParent = nullptr;
 };
 
 } // namespace mediaelch
