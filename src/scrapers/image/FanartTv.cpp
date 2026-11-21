@@ -23,6 +23,7 @@ FanartTv::FanartTv(FanartTvConfiguration& settings, QObject* parent) :
     ImageProvider(parent),
     m_settings{settings},
     m_apiKey("842f7a5d1cc7396f142b8dd47c4ba42b"),
+    m_tmdbConfig(std::make_unique<TmdbMovieConfiguration>(*Settings::instance())),
     m_tmdb(new TmdbMovie(*m_tmdbConfig, this))
 {
     m_meta.identifier = ID;
@@ -61,8 +62,6 @@ FanartTv::FanartTv(FanartTvConfiguration& settings, QObject* parent) :
     m_meta.languagePriority =
         QVector<QString>({settings.language().language(), FanartTvConfiguration::defaultLocale().language()});
 
-
-    m_tmdbConfig = std::make_unique<mediaelch::scraper::TmdbMovieConfiguration>(*Settings::instance());
 }
 
 const ImageProvider::ScraperMeta& FanartTv::meta() const

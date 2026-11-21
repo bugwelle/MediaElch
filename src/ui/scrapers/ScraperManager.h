@@ -58,6 +58,7 @@ public:
     explicit ScraperManager(Settings& settings, QObject* parent = nullptr);
     ~ScraperManager() override;
 
+    void addMovieScraper(std::unique_ptr<scraper::MovieScraper> scraper, std::unique_ptr<ScraperConfiguration> config);
     ELCH_NODISCARD mediaelch::scraper::MovieScraper* movieScraper(const QString& identifier);
     ELCH_NODISCARD mediaelch::ScraperConfiguration* movieScraperConfig(const QString& identifier);
     ELCH_NODISCARD QVector<mediaelch::scraper::MovieScraper*> movieScrapers();

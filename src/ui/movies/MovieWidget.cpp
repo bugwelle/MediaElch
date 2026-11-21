@@ -939,15 +939,19 @@ void MovieWidget::saveInformation()
         NotificationBox::instance()->showSuccess(tr("Movies Saved"));
     } else {
         const int id = NotificationBox::instance()->showMessage(tr("Saving movie..."));
-        m_movie->controller()->saveData(Manager::instance()->mediaCenterInterface());
-        m_movie->controller()->loadData(Manager::instance()->mediaCenterInterface(), true);
-        updateMovieInfo();
+        const bool saved = m_movie->controller()->saveData(Manager::instance()->mediaCenterInterface());
         NotificationBox::instance()->removeMessage(id);
-        NotificationBox::instance()->showSuccess(tr("<b>\"%1\"</b> Saved").arg(m_movie->title()));
+        if (saved) {
+            m_movie->controller()->loadData(Manager::instance()->mediaCenterInterface(), true);
+            updateMovieInfo();
+            NotificationBox::instance()->showSuccess(tr("<b>\"%1\"</b> Saved").arg(m_movie->title()));
+        } else {
+            NotificationBox::instance()->showError(tr("Could not save movie metadata."));
+        }
     }
     setEnabledTrue();
     m_savingWidget->hide();
-    ui->buttonRevert->setVisible(false);
+    ui->buttonRevert->setVisible(m_movie->hasChanged());
 }
 
 /**

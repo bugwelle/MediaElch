@@ -38,6 +38,7 @@ MovieSearchWidget::MovieSearchWidget(QWidget* parent) : QWidget(parent), ui(new 
 
 MovieSearchWidget::~MovieSearchWidget()
 {
+    abortCurrentJobs();
     delete ui;
 }
 
@@ -58,8 +59,9 @@ void MovieSearchWidget::abortAndClearResults()
 void MovieSearchWidget::abortCurrentJobs()
 {
     if (m_currentSearchJob != nullptr) {
-        m_currentSearchJob->kill();
+        auto* job = m_currentSearchJob.data();
         m_currentSearchJob = nullptr;
+        job->kill();
     }
     ui->preview->clearAndAbortPreview();
 }
@@ -228,6 +230,7 @@ void MovieSearchWidget::onShowResults(mediaelch::scraper::MovieSearchJob* search
         return;
     }
 
+    m_currentSearchJob = nullptr;
     if (searchJob->wasKilled()) {
         // If it was killed, don't report anything, but reset the search bar.
         enableSearch();

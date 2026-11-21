@@ -70,6 +70,16 @@ ScraperManager::ScraperManager(Settings& settings, QObject* parent) : QObject(pa
 
 ScraperManager::~ScraperManager() = default;
 
+void ScraperManager::addMovieScraper(std::unique_ptr<scraper::MovieScraper> scraper,
+    std::unique_ptr<ScraperConfiguration> config)
+{
+    config->init();
+    ManagedMovieScraper entry;
+    entry.m_scraper = std::move(scraper);
+    entry.m_config = std::move(config);
+    m_scraperMovies.push_back(std::move(entry));
+}
+
 QVector<mediaelch::scraper::MovieScraper*> ScraperManager::movieScrapers()
 {
     QVector<mediaelch::scraper::MovieScraper*> movieScrapers;
@@ -230,15 +240,8 @@ void ScraperManager::initMovieScrapers()
         m_scraperMovies.push_back(std::move(omdb));
     }
 
-    {
-        ManagedMovieScraper videoBuster;
-        auto config = std::make_unique<ScraperConfigurationStub>(VideoBuster::ID, m_settings);
-        config->init();
-        videoBuster.m_scraper = std::make_unique<VideoBuster>(nullptr);
-        videoBuster.m_config = std::move(config);
-
-        m_scraperMovies.push_back(std::move(videoBuster));
-    }
+    addMovieScraper(std::make_unique<VideoBuster>(nullptr),
+        std::make_unique<ScraperConfigurationStub>(VideoBuster::ID, m_settings));
 
     // Adult Movie Scrapers
     {

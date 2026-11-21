@@ -24,7 +24,6 @@ Manager::Manager(QObject* parent) :
     m_concertModel(new ConcertModel(this)),
     m_musicModel(new MusicModel(this)),
     m_database(new Database(this)),
-    m_musicFileSearcher(new MusicFileSearcher(*m_musicPersistence, this)),
     m_iconFont(new MyIconFont(this)),
     m_csvExportModule(new mediaelch::exporter::CsvExportModule(*Settings::instance()))
 {
@@ -35,6 +34,7 @@ Manager::Manager(QObject* parent) :
     m_tvShowPersistence = std::make_unique<mediaelch::TvShowPersistence>(*m_database);
     m_concertPersistence = std::make_unique<mediaelch::ConcertPersistence>(*m_database);
     m_musicPersistence = std::make_unique<mediaelch::MusicPersistence>(*m_database);
+    m_musicFileSearcher = new MusicFileSearcher(*m_musicPersistence, this);
     m_movieFileSearcher = new mediaelch::MovieFileSearcher(*m_moviePersistence, this);
     m_tvShowFileSearcher = new TvShowFileSearcher(*m_tvShowPersistence, this);
     m_concertFileSearcher = new ConcertFileSearcher(*m_concertPersistence, this);

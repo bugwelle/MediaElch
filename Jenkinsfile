@@ -82,11 +82,39 @@ pipeline {
            '''
       }
     }
+    stage('UI tests') {
+      parallel {
+        stage('Qt5 UI') {
+          steps {
+            sh '''
+              mkdir -p build/ci/reports/ui-qt5
+              export TMPDIR="$PWD/build/ci/reports/ui-qt5"
+              export ASAN_OPTIONS=detect_leaks=0 QT_QPA_PLATFORM=xcb
+              xvfb-run -a ./build/ci/test/ui/mediaelch_test_ui \
+                -r junit --warn NoTests --out build/ci/reports/mediaelch_test_ui_qt5.xml
+            '''
+          }
+        }
+        stage('Qt6 UI') {
+          steps {
+            sh '''
+              mkdir -p build/ci/reports/ui-qt6
+              export TMPDIR="$PWD/build/ci/reports/ui-qt6"
+              export ASAN_OPTIONS=detect_leaks=0 QT_QPA_PLATFORM=xcb
+              xvfb-run -a --server-num=120 ./build/ci-qt6/test/ui/mediaelch_test_ui \
+                -r junit --warn NoTests --out build/ci/reports/mediaelch_test_ui_qt6.xml
+            '''
+          }
+        }
+      }
+    }
+
   }
   post {
     always {
       recordIssues enabledForFailure: true, tool: gcc()
       recordIssues enabledForFailure: true, tool: cmake()
+      archiveArtifacts artifacts: 'build/ci/reports/ui-*/mediaelch_test_ui-*/**', allowEmptyArchive: true
       junit 'build/ci/reports/*.xml'
     }
     failure {

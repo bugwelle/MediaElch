@@ -25,6 +25,7 @@ ConcertFilesWidget::ConcertFilesWidget(QWidget* parent) :
 {
     m_instance = this;
     ui->setupUi(this);
+    m_contextMenu = new QMenu(ui->files);
     ui->statusLabel->setText(tr("%n concerts", "", 0));
 
 #ifdef Q_OS_WIN

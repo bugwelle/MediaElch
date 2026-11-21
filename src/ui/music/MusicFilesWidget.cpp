@@ -18,6 +18,7 @@ MusicFilesWidget::MusicFilesWidget(QWidget* parent) :
     m_instance = this;
     Manager::instance()->setMusicFilesWidget(this);
     ui->setupUi(this);
+    m_contextMenu = new QMenu(ui->music);
 
 
     m_proxyModel->setSourceModel(Manager::instance()->musicModel());

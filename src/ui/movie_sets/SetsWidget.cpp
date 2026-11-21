@@ -23,6 +23,7 @@ SetsWidget::SetsWidget(QWidget* parent) :
     m_downloadManager(new DownloadManager(this))
 {
     ui->setupUi(this);
+    m_tableContextMenu = new QMenu(ui->sets);
 
     ui->sets->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     ui->movies->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);

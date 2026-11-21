@@ -62,9 +62,10 @@ bool MovieController::saveData(MediaCenterInterface* mediaCenterInterface)
     bool saved = mediaCenterInterface->saveMovie(m_movie);
 
     qCDebug(generic) << "[MovieController] Saved movie? =>" << saved;
-    if (!m_infoLoaded) {
-        m_infoLoaded = saved;
+    if (!saved) {
+        return false;
     }
+    m_infoLoaded = true;
     m_movie->setChanged(false);
     m_movie->clearImages();
     m_movie->images().clearExtraFanartData();
@@ -74,7 +75,7 @@ bool MovieController::saveData(MediaCenterInterface* mediaCenterInterface)
     for (Subtitle* subtitle : subtitles) {
         subtitle->setChanged(false);
     }
-    return saved;
+    return true;
 }
 
 bool MovieController::loadData(MediaCenterInterface* mediaCenterInterface, bool force, bool reloadFromNfo)
