@@ -343,15 +343,15 @@ mediaelch::DatabaseId TvShowPersistence::showsSettingsId(TvShow* show)
     return query.lastInsertId().toInt();
 }
 
-void TvShowPersistence::clearEpisodeList(mediaelch::DatabaseId showsSettingsId)
+bool TvShowPersistence::clearEpisodeList(mediaelch::DatabaseId showsSettingsId)
 {
     QSqlQuery query(db());
     query.prepare("UPDATE showsEpisodes SET updated=0 WHERE idShow=:idShow");
     query.bindValue(":idShow", showsSettingsId.toInt());
-    query.exec();
+    return query.exec();
 }
 
-void TvShowPersistence::addEpisodeToShowList(TvShowEpisode* episode,
+bool TvShowPersistence::addEpisodeToShowList(TvShowEpisode* episode,
     mediaelch::DatabaseId showsSettingsId,
     TmdbId tmdbId)
 {
@@ -369,7 +369,7 @@ void TvShowPersistence::addEpisodeToShowList(TvShowEpisode* episode,
     } else {
         if (episode->seasonNumber().toInt() < 0 || episode->episodeNumber().toInt() < 0) {
             qCWarning(generic) << "[Database] Cannot cache an episode without a TMDb ID or season/episode numbers";
-            return;
+            return false;
         }
         query.prepare("SELECT idEpisode FROM showsEpisodes WHERE idShow=:idShow "
                       "AND seasonNumber=:seasonNumber AND episodeNumber=:episodeNumber LIMIT 1");
@@ -379,7 +379,7 @@ void TvShowPersistence::addEpisodeToShowList(TvShowEpisode* episode,
     query.bindValue(":episodeNumber", episode->episodeNumber().toInt());
     if (!query.exec()) {
         qCWarning(generic) << "[Database] Could not look up cached episode:" << query.lastError().text();
-        return;
+        return false;
     }
     if (query.next()) {
         const int idEpisode = query.value(0).toInt();
@@ -393,6 +393,7 @@ void TvShowPersistence::addEpisodeToShowList(TvShowEpisode* episode,
         query.bindValue(":episodeNumber", episode->episodeNumber().toInt());
         if (!query.exec()) {
             qCWarning(generic) << "[Database] Could not store cached episode:" << query.lastError().text();
+            return false;
         }
     } else {
         query.prepare("INSERT INTO showsEpisodes(content, idShow, seasonNumber, episodeNumber, tmdbid, updated) "
@@ -404,16 +405,32 @@ void TvShowPersistence::addEpisodeToShowList(TvShowEpisode* episode,
         query.bindValue(":tmdbId", tmdbIdValue);
         if (!query.exec()) {
             qCWarning(generic) << "[Database] Could not store cached episode:" << query.lastError().text();
+            return false;
         }
     }
+    return true;
 }
 
-void TvShowPersistence::cleanUpEpisodeList(mediaelch::DatabaseId showsSettingsId)
+bool TvShowPersistence::cleanUpEpisodeList(mediaelch::DatabaseId showsSettingsId)
 {
     QSqlQuery query(db());
     query.prepare("DELETE FROM showsEpisodes WHERE idShow=:idShow AND updated=0");
     query.bindValue(":idShow", showsSettingsId.toInt());
-    query.exec();
+    return query.exec();
+}
+
+bool TvShowPersistence::replaceEpisodeList(DatabaseId settingsId, const QVector<TvShowEpisode*>& episodes)
+{
+    SqliteTransaction transaction(db());
+    if (!settingsId.isValid() || !transaction.isActive() || !clearEpisodeList(settingsId)) {
+        return false;
+    }
+    for (auto* episode : episodes) {
+        if (episode == nullptr || !addEpisodeToShowList(episode, settingsId, episode->tmdbId())) {
+            return false;
+        }
+    }
+    return cleanUpEpisodeList(settingsId) && transaction.commit();
 }
 
 QVector<TvShowEpisode*> TvShowPersistence::showsEpisodes(TvShow* show)

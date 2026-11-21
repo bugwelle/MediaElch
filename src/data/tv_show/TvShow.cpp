@@ -333,12 +333,12 @@ void TvShow::scrapeData(mediaelch::scraper::TvScraper* scraper,
             // Update the TV show's episodes in the database after new details have been merged.
             mediaelch::TvShowPersistence persistence{*Manager::instance()->database()};
             const mediaelch::DatabaseId showsSettingsId = persistence.showsSettingsId(this);
-            persistence.clearEpisodeList(showsSettingsId);
+            if (!persistence.replaceEpisodeList(showsSettingsId, m_episodes)) {
+                qCWarning(generic) << "[Database] Could not refresh the cached episode list";
+            }
             for (TvShowEpisode* episode : asConst(m_episodes)) {
-                persistence.addEpisodeToShowList(episode, showsSettingsId, episode->tmdbId());
                 episode->setChanged(true);
             }
-            persistence.cleanUpEpisodeList(showsSettingsId);
 
             setChanged(true);
             emit sigLoaded(this, showDetails, job->config().locale);

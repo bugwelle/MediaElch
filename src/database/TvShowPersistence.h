@@ -36,9 +36,11 @@ public:
     virtual void setShowMissingEpisodes(TvShow* show, bool showMissing);
     virtual void setHideSpecialsInMissingEpisodes(TvShow* show, bool hideSpecials);
     virtual mediaelch::DatabaseId showsSettingsId(TvShow* show);
-    virtual void clearEpisodeList(mediaelch::DatabaseId showsSettingsId);
-    virtual void cleanUpEpisodeList(mediaelch::DatabaseId showsSettingsId);
-    virtual void addEpisodeToShowList(TvShowEpisode* episode, mediaelch::DatabaseId showsSettingsId, TmdbId tmdbId);
+    virtual bool clearEpisodeList(mediaelch::DatabaseId showsSettingsId);
+    virtual bool cleanUpEpisodeList(mediaelch::DatabaseId showsSettingsId);
+    virtual bool addEpisodeToShowList(TvShowEpisode* episode, mediaelch::DatabaseId showsSettingsId, TmdbId tmdbId);
+    ELCH_NODISCARD virtual bool replaceEpisodeList(mediaelch::DatabaseId settingsId,
+        const QVector<TvShowEpisode*>& episodes);
     virtual QVector<TvShowEpisode*> showsEpisodes(TvShow* show);
 
 private:

@@ -358,3 +358,53 @@ TEST_CASE("Failed cached-episode writes retain the previous episode", "[database
     persistence.addEpisodeToShowList(&episode, id, TmdbId(456));
     CHECK(persistence.showsEpisodes(&show).size() == 1);
 }
+
+TEST_CASE("Episode-list replacement rolls back every failed refresh stage", "[database][persistence]")
+{
+    const QString stage = GENERATE("mark", "update", "insert", "cleanup", "success", "empty");
+    Database database{QStringLiteral(":memory:")};
+    QObject owner;
+    TvShowPersistence persistence{database, &owner};
+    TvShow show{firstDirectory};
+    const auto id = persistence.showsSettingsId(&show);
+    TvShowEpisode retained;
+    retained.setSeason(SeasonNumber(1));
+    retained.setEpisode(EpisodeNumber(1));
+    retained.setTmdbId(TmdbId(123));
+    retained.setTitle("old");
+    TvShowEpisode removed;
+    removed.setSeason(SeasonNumber(1));
+    removed.setEpisode(EpisodeNumber(2));
+    removed.setTmdbId(TmdbId(456));
+    REQUIRE(persistence.replaceEpisodeList(id, {&retained, &removed}));
+    retained.setTitle("new");
+    TvShowEpisode added;
+    added.setSeason(SeasonNumber(1));
+    added.setEpisode(EpisodeNumber(3));
+    added.setTmdbId(TmdbId(789));
+    if (stage != "success" && stage != "empty") {
+        const QString event = stage == "insert" ? "INSERT" : stage == "cleanup" ? "DELETE" : "UPDATE";
+        const QString condition = stage == "mark"     ? " WHEN NEW.updated=0"
+                                  : stage == "update" ? " WHEN NEW.updated=1"
+                                                      : "";
+        test::executeSql(database.db(),
+            "CREATE TRIGGER fail_refresh BEFORE " + event + " ON showsEpisodes" + condition
+                + " BEGIN SELECT RAISE(ABORT,'test failure'); END");
+    }
+    const bool success = persistence.replaceEpisodeList(
+        id, stage == "empty" ? QVector<TvShowEpisode*>{} : QVector<TvShowEpisode*>{&retained, &added});
+    CHECK(success == (stage == "success" || stage == "empty"));
+    auto episodes = persistence.showsEpisodes(&show);
+    if (stage == "empty") {
+        CHECK(episodes.isEmpty());
+    } else {
+        REQUIRE(episodes.size() == 2);
+        for (auto* episode : episodes) {
+            if (episode->episodeNumber() == EpisodeNumber(1)) {
+                CHECK(episode->nfoContent().contains(stage == "success" ? "new" : "old"));
+            } else {
+                CHECK(episode->episodeNumber() == EpisodeNumber(stage == "success" ? 3 : 2));
+            }
+        }
+    }
+}

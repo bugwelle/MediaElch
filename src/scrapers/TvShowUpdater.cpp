@@ -69,11 +69,9 @@ void TvShowUpdater::updateShow(TvShow* show, bool force)
         // Store in database
         TvShowPersistence database{*Manager::instance()->database()};
         const DatabaseId showsSettingsId = database.showsSettingsId(show);
-        database.clearEpisodeList(showsSettingsId);
-        for (auto* episode : scrapedEpisodes) {
-            database.addEpisodeToShowList(episode, showsSettingsId, episode->tmdbId());
+        if (!database.replaceEpisodeList(showsSettingsId, scrapedEpisodes.values().toVector())) {
+            box->showWarning(tr("Could not refresh the cached episode list. The previous list was kept."));
         }
-        database.cleanUpEpisodeList(showsSettingsId);
 
         show->fillMissingEpisodes();
     });
