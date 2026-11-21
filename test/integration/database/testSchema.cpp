@@ -45,7 +45,7 @@ TEST_CASE("Ensure Schema is Up-To-Date", "[database][schema]")
     QSqlQuery query(database.db());
     REQUIRE(query.exec("SELECT value FROM settings WHERE idSettings=1"));
     REQUIRE(query.next());
-    CHECK(query.value(0).toInt() == 18);
+    CHECK(query.value(0).toInt() == Database::schemaVersion());
 }
 
 TEST_CASE("Upgrade each supported database version without losing unrelated data", "[database][schema]")
@@ -78,6 +78,10 @@ TEST_CASE("Upgrade each supported database version without losing unrelated data
             test::executeSql(db, "DROP INDEX id_label_filename_idx");
             test::executeSql(db, "CREATE INDEX id_label_filename_idx ON labels(color)");
         }
+        const QString providerColumn = version < 17 ? "tvdbid" : "tmdbid";
+        test::executeSql(db,
+            "INSERT INTO showsSettings(" + providerColumn
+                + ",url,showMissingEpisodes,hideSpecialsInMissingEpisodes,dir) VALUES('123','guide',1,1,'keep-show')");
         test::executeSql(db, QStringLiteral("INSERT INTO settings VALUES(1, '%1')").arg(version));
         test::executeSql(db, "INSERT INTO importCache(filename, type, path) VALUES('keep.mkv', 'movie', '/keep')");
         test::executeSql(db, "INSERT INTO labels(color, fileName) VALUES(2, 'keep.mkv')");
@@ -93,7 +97,13 @@ TEST_CASE("Upgrade each supported database version without losing unrelated data
         QSqlQuery query(upgraded.db());
         REQUIRE(query.exec("SELECT value FROM settings WHERE idSettings=1"));
         REQUIRE(query.next());
-        CHECK(query.value(0).toInt() == 18);
+        CHECK(query.value(0).toInt() == Database::schemaVersion());
+        query.finish();
+        REQUIRE(query.exec(
+            "SELECT showMissingEpisodes,hideSpecialsInMissingEpisodes FROM showsSettings WHERE dir='keep-show'"));
+        REQUIRE(query.next());
+        CHECK(query.value(0).toBool());
+        CHECK(query.value(1).toBool());
         query.finish();
         REQUIRE(query.exec("PRAGMA index_info(id_label_filename_idx)"));
         REQUIRE(query.next());
@@ -102,4 +112,59 @@ TEST_CASE("Upgrade each supported database version without losing unrelated data
     Database reopened{path};
     CHECK(test::rowCount(reopened.db(), "importCache") == 1);
     CHECK(test::rowCount(reopened.db(), "labels") == 1);
+}
+
+TEST_CASE("Untrusted schema versions never reset an existing database", "[database][schema]")
+{
+    const QString fault = GENERATE("invalid", "future", "missing-row", "missing-table", "unreadable");
+    QTemporaryDir dir;
+    REQUIRE(dir.isValid());
+    const auto path = dir.filePath("cache.sqlite");
+    {
+        Database database{path};
+        test::executeSql(database.db(), "INSERT INTO labels(color,fileName) VALUES(1,'keep')");
+        if (fault == "invalid") {
+            test::executeSql(database.db(), "UPDATE settings SET value='broken'");
+        } else if (fault == "future") {
+            test::executeSql(database.db(), "UPDATE settings SET value='999'");
+        } else if (fault == "missing-row") {
+            test::executeSql(database.db(), "DELETE FROM settings");
+        } else if (fault == "missing-table") {
+            test::executeSql(database.db(), "DROP TABLE settings");
+        } else {
+            test::executeSql(database.db(), "ALTER TABLE settings RENAME TO unreadable_settings");
+            test::executeSql(database.db(), "CREATE TABLE settings(idSettings INTEGER, wrongColumn TEXT)");
+        }
+    }
+    Database rejected{path};
+    CHECK_FALSE(rejected.db().isOpen());
+    CHECK_FALSE(rejected.initializationError().isEmpty());
+    auto raw = rejected.db();
+    REQUIRE(raw.open());
+    CHECK(test::rowCount(raw, "labels") == 1);
+}
+
+TEST_CASE("Failed migrations roll back both schema and version changes", "[database][schema]")
+{
+    QTemporaryDir dir;
+    REQUIRE(dir.isValid());
+    const auto path = dir.filePath("cache.sqlite");
+    {
+        Database database{path};
+        test::executeSql(database.db(), "UPDATE settings SET value='17'");
+        test::executeSql(database.db(), "INSERT INTO labels(color,fileName) VALUES(1,'keep')");
+        test::executeSql(database.db(), "ALTER TABLE labels RENAME TO saved_labels");
+    }
+    Database rejected{path};
+    CHECK_FALSE(rejected.db().isOpen());
+    auto raw = rejected.db();
+    REQUIRE(raw.open());
+    CHECK(test::rowCount(raw, "saved_labels") == 1);
+    QSqlQuery query(raw);
+    REQUIRE(query.exec("SELECT value FROM settings WHERE idSettings=1"));
+    REQUIRE(query.next());
+    CHECK(query.value(0).toInt() == 17);
+    query.finish();
+    REQUIRE(query.exec("SELECT name FROM sqlite_master WHERE name='id_label_filename_idx'"));
+    REQUIRE(query.next());
 }

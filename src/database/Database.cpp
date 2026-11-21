@@ -1,6 +1,7 @@
 #include "Database.h"
 
 #include "data/Subtitle.h"
+#include "database/SqliteTransaction.h"
 #include "globals/Helper.h"
 #include "globals/Manager.h"
 #include "log/Log.h"
@@ -46,8 +47,9 @@ Database::Database(const QString& databaseName, QObject* parent) : QObject(paren
 
     if (!m_db->open()) {
         qCCritical(generic) << "Could not open cache database";
-    } else {
-        setupDatabase();
+    } else if (!setupDatabase()) {
+        qCCritical(generic) << "[Database] Initialization failed:" << m_initializationError;
+        m_db->close();
     }
 }
 
@@ -63,58 +65,37 @@ Database* Database::newConnection(QObject* parent)
     return new Database(parent);
 }
 
-QStringList getSqlStatementsFromFile(const QString& filePath)
-{
-    QFile res(filePath);
-    const bool result = res.open(QIODevice::ReadOnly);
-    if (!result) {
-        qCCritical(generic) << "[Database] Could not open SQL file:" << filePath;
-        qFatal("Fatal database error");
-    }
-    QString fileContents(res.readAll());
-    res.close();
-    return fileContents.split("-- next", ElchSplitBehavior::SkipEmptyParts);
-}
+namespace {
 
-void executeSqlStatementsFromFile(const QString& filePath, QSqlQuery& query)
+bool executeSqlStatementsFromFile(const QString& filePath, QSqlQuery& query, QString& error)
 {
-    const QStringList statements = getSqlStatementsFromFile(filePath);
-    for (const QString& statement : statements) {
-        QString sql = statement.trimmed();
-        bool success = query.prepare(sql.trimmed());
-        if (!success) {
-            qCCritical(generic) << "[Database] Error preparing SQL:" << sql << "; ERROR:" << query.lastError().text();
-            qFatal("Fatal database error");
-        }
-        success = query.exec();
-        if (!success) {
-            qCCritical(generic) << "[Database] Error executing SQL:" << sql << "; ERROR:" << query.lastError().text();
-            qFatal("Fatal database error");
+    QFile file(filePath);
+    if (!file.open(QIODevice::ReadOnly)) {
+        error = "Could not open migration: " + filePath;
+        return false;
+    }
+    const auto statements = QString::fromUtf8(file.readAll()).split("-- next", ElchSplitBehavior::SkipEmptyParts);
+    for (const auto& statement : statements) {
+        if (!query.exec(statement.trimmed())) {
+            error = filePath + ": " + query.lastError().text();
+            return false;
         }
     }
+    return true;
 }
 
-void Database::updateDbVersion(int version)
+} // namespace
+
+bool Database::updateDbVersion(int version)
 {
     QSqlQuery query(*m_db);
-
-    query.prepare("SELECT * FROM sqlite_master WHERE name ='settings' and type='table';");
-    query.exec();
-    if (!query.next()) {
-        executeSqlStatementsFromFile(":/sql/000_settings.sql", query);
+    query.prepare("INSERT OR REPLACE INTO settings(idSettings, value) VALUES(1, :version)");
+    query.bindValue(":version", QString::number(version));
+    if (!query.exec()) {
+        m_initializationError = query.lastError().text();
+        return false;
     }
-
-    query.prepare("SELECT value FROM settings WHERE idSettings=1");
-    query.exec();
-    if (query.next()) {
-        query.prepare("UPDATE settings SET value=:dbVersion WHERE idSettings=1");
-        query.bindValue(":dbVersion", QString::number(version));
-        query.exec();
-    } else {
-        query.prepare("INSERT INTO settings(idSettings, value) VALUES(1, :dbVersion)");
-        query.bindValue(":dbVersion", QString::number(version));
-        query.exec();
-    }
+    return true;
 }
 
 QSqlDatabase Database::db()
@@ -212,53 +193,74 @@ QString Database::getSchema()
     return tables.join(";\n\n");
 }
 
-void Database::setupDatabase()
+int Database::schemaVersion()
 {
-    QSqlQuery query(*m_db);
+    return 18;
+}
 
-    int myDbVersion = -1;
-    query.prepare("SELECT * FROM sqlite_master WHERE name ='settings' and type='table';");
-    query.exec();
-    if (query.next()) {
-        query.prepare("SELECT value FROM settings WHERE idSettings=1");
-        query.exec();
-        if (query.next()) {
-            myDbVersion = query.value(0).toInt();
+bool Database::setupDatabase()
+{
+    const int latestVersion = schemaVersion();
+    SqliteTransaction transaction(*m_db);
+    if (!transaction.isActive()) {
+        m_initializationError = "Could not start schema transaction";
+        return false;
+    }
+    QSqlQuery query(*m_db);
+    if (!query.exec("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'")) {
+        m_initializationError = query.lastError().text();
+        return false;
+    }
+    QStringList tables;
+    while (query.next()) {
+        tables << query.value(0).toString();
+    }
+    if (query.lastError().isValid()) {
+        m_initializationError = query.lastError().text();
+        return false;
+    }
+    int version = 0;
+    if (!tables.isEmpty()) {
+        if (!tables.contains("settings") || !query.exec("SELECT value FROM settings WHERE idSettings=1")
+            || !query.next()) {
+            m_initializationError = "Missing or unreadable database version: " + query.lastError().text();
+            return false;
+        }
+        bool ok = false;
+        version = query.value(0).toString().toInt(&ok);
+        if (!ok || version < 14 || version > latestVersion) {
+            m_initializationError = "Invalid or unsupported database version: " + query.value(0).toString();
+            return false;
         }
     }
-
-    if (myDbVersion < 14) {
-        executeSqlStatementsFromFile(":/sql/014_initial.sql", query);
-        myDbVersion = 14;
-        updateDbVersion(14);
+    query.finish();
+    if (tables.isEmpty()) {
+        if (!executeSqlStatementsFromFile(":/sql/014_initial.sql", query, m_initializationError)
+            || !executeSqlStatementsFromFile(":/sql/000_settings.sql", query, m_initializationError)
+            || !updateDbVersion(14)) {
+            return false;
+        }
+        version = 14;
     }
-    if (myDbVersion < 15) {
-        executeSqlStatementsFromFile(":/sql/015_artists_albums.sql", query);
-        myDbVersion = 15;
-        updateDbVersion(15);
+    const QStringList migrations{
+        "015_artists_albums.sql", "016_movieSubtitles.sql", "017_showEpisodes.sql", "018_index_fix.sql"};
+    for (int nextVersion = version + 1; nextVersion <= latestVersion; ++nextVersion) {
+        if (!executeSqlStatementsFromFile(":/sql/" + migrations.at(nextVersion - 15), query, m_initializationError)
+            || !updateDbVersion(nextVersion)) {
+            return false;
+        }
     }
-    if (myDbVersion < 16) {
-        executeSqlStatementsFromFile(":/sql/016_movieSubtitles.sql", query);
-        myDbVersion = 16;
-        updateDbVersion(16);
+    query.finish();
+    if (!transaction.commit()) {
+        m_initializationError = "Could not commit schema migration";
+        return false;
     }
-    if (myDbVersion < 17) {
-        executeSqlStatementsFromFile(":/sql/017_showEpisodes.sql", query);
-        myDbVersion = 17;
-        updateDbVersion(myDbVersion);
+    for (const auto& sql : {"PRAGMA synchronous=0", "PRAGMA journal_mode=WAL", "PRAGMA cache_size=20000"}) {
+        if (!query.exec(sql)) {
+            m_initializationError = query.lastError().text();
+            return false;
+        }
+        query.finish();
     }
-    if (myDbVersion < 18) {
-        executeSqlStatementsFromFile(":/sql/018_index_fix.sql", query);
-        myDbVersion = 18;
-        updateDbVersion(myDbVersion);
-    }
-
-    query.prepare("PRAGMA synchronous=0;");
-    query.exec();
-
-    query.prepare("PRAGMA journal_mode=WAL;");
-    query.exec();
-
-    query.prepare("PRAGMA cache_size=20000;");
-    query.exec();
+    return true;
 }

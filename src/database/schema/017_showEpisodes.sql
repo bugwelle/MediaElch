@@ -1,7 +1,7 @@
 DROP TABLE IF EXISTS showsEpisodes;
 -- next
 
-DROP TABLE IF EXISTS showsSettings;
+ALTER TABLE showsSettings RENAME TO oldShowsSettings;
 -- next
 
 CREATE TABLE IF NOT EXISTS showsEpisodes (
@@ -23,3 +23,10 @@ CREATE TABLE IF NOT EXISTS showsSettings (
     "hideSpecialsInMissingEpisodes" integer NOT NULL,
     "dir" text NOT NULL
 );
+-- next
+
+INSERT INTO showsSettings(idShow, tmdbid, url, showMissingEpisodes, hideSpecialsInMissingEpisodes, dir)
+SELECT idShow, '', url, showMissingEpisodes, hideSpecialsInMissingEpisodes, dir FROM oldShowsSettings;
+-- next
+
+DROP TABLE oldShowsSettings;

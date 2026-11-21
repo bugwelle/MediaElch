@@ -21,7 +21,9 @@ public:
     /// \brief Create a new connection for the calling thread.
     static Database* newConnection(QObject* parent);
 
+    static int schemaVersion();
     QSqlDatabase db();
+    QString initializationError() const { return m_initializationError; }
 
     void addImport(QString fileName, QString type, mediaelch::DirectoryPath path);
     bool guessImport(QString fileName, QString& type, QString& path);
@@ -33,10 +35,11 @@ public:
     QString getSchema();
 
 private:
-    void setupDatabase();
+    bool setupDatabase();
 
 private:
     mediaelch::DirectoryPath m_dataLocation;
     std::unique_ptr<QSqlDatabase> m_db;
-    void updateDbVersion(int version);
+    bool updateDbVersion(int version);
+    QString m_initializationError;
 };
