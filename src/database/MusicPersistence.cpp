@@ -6,6 +6,7 @@
 #include "globals/Manager.h"
 #include "log/Log.h"
 
+#include <QSqlError>
 #include <QSqlQuery>
 #include <QSqlRecord>
 
@@ -124,7 +125,10 @@ QVector<Album*> MusicPersistence::albums(Artist* artist)
     QSqlQuery query(db());
     query.prepare("SELECT idAlbum, content, dir FROM albums WHERE idArtist=:idArtist");
     query.bindValue(":idArtist", artist->databaseId().toInt());
-    query.exec();
+    if (!query.exec()) {
+        qCWarning(generic) << "[Database] Could not load albums:" << query.lastError().text();
+        return {};
+    }
     while (query.next()) {
         mediaelch::DirectoryPath dir(QString::fromUtf8(query.value(query.record().indexOf("dir")).toByteArray()));
         auto* album = new Album(
@@ -132,9 +136,14 @@ QVector<Album*> MusicPersistence::albums(Artist* artist)
         album->setDatabaseId(query.value(query.record().indexOf("idAlbum")).toInt());
         album->setNfoContent(QString::fromUtf8(query.value(query.record().indexOf("content")).toByteArray()));
         album->setArtistObj(artist);
-        artist->addAlbum(album);
         albums.append(album);
     }
+    if (query.lastError().isValid()) {
+        qDeleteAll(albums);
+        qCWarning(generic) << "[Database] Could not fetch albums:" << query.lastError().text();
+        return {};
+    }
+    artist->setAlbums(albums);
     return albums;
 }
 

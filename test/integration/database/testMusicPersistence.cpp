@@ -67,6 +67,11 @@ TEST_CASE("Music persistence restores artists, albums and their relationships", 
     CHECK(albums.first()->nfoContent() == album.nfoContent());
     CHECK(albums.first()->artistObj() == loaded);
     CHECK(loaded->albums() == albums);
+    const auto reloadedAlbums = persistence.albums(loaded);
+    REQUIRE(reloadedAlbums.size() == 1);
+    CHECK(loaded->albums() == reloadedAlbums);
+    CHECK(loaded->albums().size() == 1);
+    CHECK(loaded->albums().first()->databaseId().toInt() == album.databaseId().toInt());
     CHECK(persistence.albums(&other).isEmpty());
     CHECK(persistence.artistsInDirectory(root.subDir("absent")).isEmpty());
     artist.setNfoContent(QString());
@@ -82,6 +87,9 @@ TEST_CASE("Music persistence restores artists, albums and their relationships", 
     CHECK(emptyAlbums.first()->nfoContent().isEmpty());
     CHECK(test::rowCount(persistence.db(), "artists") == 2);
     CHECK(test::rowCount(persistence.db(), "albums") == 1);
+    persistence.clearAllAlbums();
+    CHECK(persistence.albums(loaded).isEmpty());
+    CHECK(loaded->albums().isEmpty());
 }
 
 TEST_CASE("Music cleanup respects roots and cascades artist removal to albums", "[database][persistence][music]")
