@@ -182,13 +182,13 @@ TEST_CASE("Keep cached episode lists separate for each show directory", "[databa
     persistence.cleanUpEpisodeList(secondId);
 
     QSqlQuery query(database.db());
-    query.prepare("SELECT episodeNumber FROM showsEpisodes WHERE idShow=:idShow");
-    query.bindValue(":idShow", firstId.toInt());
+    query.prepare("SELECT episodeNumber FROM showsEpisodes WHERE idShowSettings=:idShowSettings");
+    query.bindValue(":idShowSettings", firstId.toInt());
     REQUIRE(query.exec());
     REQUIRE(query.next());
     CHECK(query.value(0).toInt() == 2);
     CHECK_FALSE(query.next());
-    query.bindValue(":idShow", secondId.toInt());
+    query.bindValue(":idShowSettings", secondId.toInt());
     REQUIRE(query.exec());
     REQUIRE(query.next());
     CHECK(query.value(0).toInt() == 3);
@@ -269,9 +269,11 @@ TEST_CASE("Replace cached episode files atomically", "[database][persistence]")
 {
     Database database{QStringLiteral(":memory:")};
     mediaelch::TvShowPersistence persistence{database};
+    TvShow show;
+    persistence.add(&show, mediaelch::DirectoryPath(QStringLiteral("/media")));
     TvShowEpisode episode{oldFiles};
     episode.setNfoContent(QStringLiteral("before"));
-    persistence.add(&episode, mediaelch::DirectoryPath(QStringLiteral("/media")), mediaelch::DatabaseId(1));
+    persistence.add(&episode, mediaelch::DirectoryPath(QStringLiteral("/media")), show.databaseId());
     REQUIRE(episode.databaseId().isValid());
     episode.setNfoContent(QStringLiteral("after"));
     episode.setFiles(newFiles);

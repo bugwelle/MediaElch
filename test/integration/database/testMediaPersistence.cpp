@@ -423,3 +423,63 @@ TEST_CASE("Episode-list replacement rolls back every failed refresh stage", "[da
         }
     }
 }
+
+TEST_CASE("Every connection enforces parent relationships", "[database][persistence]")
+{
+    Database database{QStringLiteral(":memory:")};
+    QSqlQuery query(database.db());
+    REQUIRE(query.exec("PRAGMA foreign_keys"));
+    REQUIRE(query.next());
+    REQUIRE(query.value(0).toInt() == 1);
+    query.finish();
+    for (const auto* sql : {"INSERT INTO movieFiles(idMovie,file) VALUES(999,'orphan')",
+             "INSERT INTO concertFiles(idConcert,file) VALUES(999,'orphan')",
+             "INSERT INTO episodes(content,idShow,seasonNumber,episodeNumber,path) VALUES('',999,1,1,'/')",
+             "INSERT INTO episodeFiles(idEpisode,file) VALUES(999,'orphan')",
+             "INSERT INTO albums(idArtist,content,dir,path) VALUES(999,'','/','/')",
+             "INSERT INTO movieSubtitles(idMovie,files,language,forced) VALUES(999,'orphan','en',0)",
+             "INSERT INTO showsEpisodes(content,idShowSettings,seasonNumber,episodeNumber,tmdbid,updated) "
+             "VALUES('',999,1,1,'1',1)"}) {
+        CAPTURE(sql);
+        CHECK_FALSE(query.exec(sql));
+        CHECK(query.lastError().isValid());
+    }
+}
+
+TEST_CASE("File uniqueness is scoped to its parent and deleting a show cascades to its files",
+    "[database][persistence]")
+{
+    Database database{QStringLiteral(":memory:")};
+    QObject owner;
+    TvShowPersistence persistence{database, &owner};
+    TvShow show{firstDirectory};
+    persistence.add(&show, firstDirectory);
+    TvShowEpisode first{firstFiles};
+    TvShowEpisode second{firstFiles};
+    persistence.add(&first, firstDirectory, show.databaseId());
+    persistence.add(&second, firstDirectory, show.databaseId());
+    CHECK(test::rowCount(database.db(), "episodeFiles") == 4);
+    QSqlQuery query(database.db());
+    CHECK_FALSE(query.exec("INSERT INTO episodeFiles(idEpisode,file) SELECT idEpisode,file FROM episodeFiles LIMIT 1"));
+    REQUIRE(query.exec("DELETE FROM shows"));
+    CHECK(test::rowCount(database.db(), "episodes") == 0);
+    CHECK(test::rowCount(database.db(), "episodeFiles") == 0);
+    CHECK(test::rowCount(database.db(), "showsSettings") == 1);
+}
+
+TEST_CASE("Durable identities reject duplicate labels and show settings", "[database][persistence]")
+{
+    Database database{QStringLiteral(":memory:")};
+    database.setLabel(firstFiles, ColorLabel::Red);
+    QObject owner;
+    TvShowPersistence persistence{database, &owner};
+    TvShow show{firstDirectory};
+    REQUIRE(persistence.showsSettingsId(&show).isValid());
+    QSqlQuery query(database.db());
+    CHECK_FALSE(query.exec("INSERT INTO labels(color,fileName) SELECT color,fileName FROM labels LIMIT 1"));
+    CHECK_FALSE(
+        query.exec("INSERT INTO showsSettings(tmdbid,url,showMissingEpisodes,hideSpecialsInMissingEpisodes,dir) "
+                   "SELECT tmdbid,url,showMissingEpisodes,hideSpecialsInMissingEpisodes,dir FROM showsSettings"));
+    CHECK(test::rowCount(database.db(), "showsSettings") == 1);
+    CHECK(test::rowCount(database.db(), "labels") == 2);
+}

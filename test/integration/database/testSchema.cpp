@@ -230,3 +230,90 @@ TEST_CASE("Legacy BLOB paths and date strings migrate to explicit storage types"
     CHECK(
         movies.first()->files().first().toString() == mediaelch::FilePath(QStringLiteral("/ä's/movie.mkv")).toString());
 }
+
+TEST_CASE("Relationship migration merges duplicate identities and removes orphaned cache rows", "[database][schema]")
+{
+    QTemporaryDir dir;
+    REQUIRE(dir.isValid());
+    const auto path = dir.filePath("cache.sqlite");
+    legacyDatabase(path, 18, [](QSqlDatabase db) {
+        test::executeSql(db, "INSERT INTO labels VALUES(1,1,CAST('/same' AS BLOB)),(2,2,'/same')");
+        test::executeSql(db,
+            "INSERT INTO showsSettings VALUES(10,'1','old',0,0,CAST('/same' AS BLOB)),"
+            "(20,'2','new',1,1,'/same')");
+        test::executeSql(db,
+            "INSERT INTO showsEpisodes VALUES(100,'old',10,1,1,'1',1),"
+            "(200,'new',20,1,1,'2',1),(300,'keep',10,1,2,'3',1),(400,'orphan',999,1,1,'4',1)");
+        test::executeSql(db, "INSERT INTO movies VALUES(1,'',123,0,0,0,0,0,0,0,0,0,0,'/')");
+        test::executeSql(db, "INSERT INTO movieFiles VALUES(1,1,CAST('/same' AS BLOB)),(2,1,'/same'),(3,999,'orphan')");
+        test::executeSql(db, "INSERT INTO movieSubtitles VALUES(1,1,'keep','en',0),(2,999,'orphan','en',0)");
+        test::executeSql(db, "INSERT INTO shows VALUES(1,'/show','','/')");
+        test::executeSql(db, "INSERT INTO episodes VALUES(1,'',1,1,1,'/'),(2,'',999,1,2,'/')");
+        test::executeSql(db, "INSERT INTO episodeFiles VALUES(1,1,'keep'),(2,2,'orphan')");
+        test::executeSql(db, "INSERT INTO concerts VALUES(1,'',0,'/')");
+        test::executeSql(db, "INSERT INTO concertFiles VALUES(1,1,'keep'),(2,999,'orphan')");
+        test::executeSql(db, "INSERT INTO artists VALUES(1,'','/artist','/')");
+        test::executeSql(db, "INSERT INTO albums VALUES(1,1,'','/album','/'),(2,999,'','/orphan','/')");
+    });
+    Database migrated{path};
+    REQUIRE(migrated.db().isOpen());
+    QSqlQuery query(migrated.db());
+    REQUIRE(query.exec("PRAGMA foreign_key_check"));
+    CHECK_FALSE(query.next());
+    for (const auto* table : {"labels",
+             "showsSettings",
+             "movieFiles",
+             "movieSubtitles",
+             "episodes",
+             "episodeFiles",
+             "concertFiles",
+             "albums"}) {
+        CAPTURE(table);
+        CHECK(test::rowCount(migrated.db(), table) == 1);
+    }
+    REQUIRE(query.exec("SELECT color FROM labels"));
+    REQUIRE(query.next());
+    CHECK(query.value(0).toInt() == 2);
+    query.finish();
+    REQUIRE(query.exec("SELECT idShow,showMissingEpisodes,hideSpecialsInMissingEpisodes FROM showsSettings"));
+    REQUIRE(query.next());
+    CHECK(query.value(0).toInt() == 20);
+    CHECK(query.value(1).toBool());
+    CHECK(query.value(2).toBool());
+    query.finish();
+    REQUIRE(query.exec("SELECT content,idShowSettings FROM showsEpisodes ORDER BY idEpisode"));
+    REQUIRE(query.next());
+    CHECK(query.value(0).toString() == QStringLiteral("new"));
+    CHECK(query.value(1).toInt() == 20);
+    REQUIRE(query.next());
+    CHECK(query.value(0).toString() == QStringLiteral("keep"));
+    CHECK(query.value(1).toInt() == 20);
+    CHECK_FALSE(query.next());
+}
+
+TEST_CASE("A late migration failure restores earlier data conversions and the original version", "[database][schema]")
+{
+    QTemporaryDir dir;
+    REQUIRE(dir.isValid());
+    const auto path = dir.filePath("cache.sqlite");
+    legacyDatabase(path, 18, [](QSqlDatabase db) {
+        test::executeSql(db, "INSERT INTO labels VALUES(1,1,CAST('/same' AS BLOB)),(2,2,'/same')");
+        test::executeSql(db, "CREATE TRIGGER fail_cleanup BEFORE DELETE ON labels "
+                            "BEGIN SELECT RAISE(ABORT,'test failure'); END");
+    });
+    Database rejected{path};
+    CHECK_FALSE(rejected.db().isOpen());
+    auto raw = rejected.db();
+    REQUIRE(raw.open());
+    CHECK(test::rowCount(raw, "labels") == 2);
+    QSqlQuery query(raw);
+    REQUIRE(query.exec("SELECT typeof(fileName) FROM labels ORDER BY idLabel"));
+    REQUIRE(query.next());
+    CHECK(query.value(0).toString() == QStringLiteral("blob"));
+    REQUIRE(query.next());
+    CHECK(query.value(0).toString() == QStringLiteral("text"));
+    query.finish();
+    REQUIRE(query.exec("SELECT value FROM settings WHERE idSettings=1"));
+    REQUIRE(query.next());
+    CHECK(query.value(0).toInt() == 18);
+}

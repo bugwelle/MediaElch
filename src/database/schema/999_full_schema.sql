@@ -23,14 +23,6 @@ CREATE TABLE movies (
 
 CREATE TABLE sqlite_sequence(name,seq);
 
-CREATE TABLE movieFiles(
-    "idFile" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
-    "idMovie" integer NOT NULL,
-    "file" text NOT NULL
-);
-
-CREATE INDEX id_movie_idx ON movieFiles(idMovie);
-
 CREATE TABLE concerts (
     "idConcert" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
     "content" text NOT NULL,
@@ -38,37 +30,12 @@ CREATE TABLE concerts (
     "path" text NOT NULL
 );
 
-CREATE TABLE concertFiles(
-    "idFile" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
-    "idConcert" integer NOT NULL,
-    "file" text NOT NULL
-);
-
-CREATE INDEX id_concert_idx ON concertFiles(idConcert);
-
 CREATE TABLE shows (
     "idShow" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
     "dir" text NOT NULL,
     "content" text NOT NULL,
     "path" text NOT NULL
 );
-
-CREATE TABLE episodes (
-    "idEpisode" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
-    "content" text NOT NULL,
-    "idShow" integer NOT NULL,
-    "seasonNumber" integer NOT NULL,
-    "episodeNumber" integer NOT NULL,
-    "path" text NOT NULL
-);
-
-CREATE TABLE episodeFiles(
-    "idFile" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
-    "idEpisode" integer NOT NULL,
-    "file" text NOT NULL
-);
-
-CREATE INDEX id_episode_idx ON episodeFiles(idEpisode);
 
 CREATE TABLE labels (
     "idLabel" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
@@ -95,33 +62,7 @@ CREATE TABLE artists (
     "path" text NOT NULL
 );
 
-CREATE TABLE albums (
-    "idAlbum" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
-    "idArtist" integer NOT NULL,
-    "content" text NOT NULL,
-    "dir" text NOT NULL,
-    "path" text NOT NULL
-);
-
-CREATE TABLE movieSubtitles (
-    "idSubtitle" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
-    "idMovie" integer NOT NULL,
-    "files" text NOT NULL,
-    "language" text NOT NULL,
-    "forced" integer NOT NULL
-);
-
-CREATE INDEX id_subtitle_idx ON movieSubtitles(idMovie);
-
-CREATE TABLE showsEpisodes (
-    "idEpisode" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
-    "content" text NOT NULL,
-    "idShow" integer NOT NULL,
-    "seasonNumber" integer NOT NULL,
-    "episodeNumber" integer NOT NULL,
-    "tmdbid" text NOT NULL,
-    "updated" integer NOT NULL
-);
+CREATE UNIQUE INDEX id_label_filename_idx ON labels(fileName);
 
 CREATE TABLE showsSettings (
     "idShow" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
@@ -132,4 +73,65 @@ CREATE TABLE showsSettings (
     "dir" text NOT NULL
 );
 
-CREATE INDEX id_label_filename_idx ON labels(fileName)
+CREATE UNIQUE INDEX id_show_settings_dir_idx ON showsSettings(dir);
+
+CREATE TABLE showsEpisodes (
+    "idEpisode" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "content" text NOT NULL,
+    "idShowSettings" integer NOT NULL REFERENCES showsSettings(idShow) ON DELETE CASCADE,
+    "seasonNumber" integer NOT NULL,
+    "episodeNumber" integer NOT NULL,
+    "tmdbid" text NOT NULL,
+    "updated" integer NOT NULL,
+    UNIQUE(idShowSettings,seasonNumber,episodeNumber)
+);
+
+CREATE UNIQUE INDEX id_show_episode_tmdb_idx ON showsEpisodes(idShowSettings,tmdbid) WHERE tmdbid<>'';
+
+CREATE TABLE movieFiles (
+    "idFile" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "idMovie" integer NOT NULL REFERENCES movies(idMovie) ON DELETE CASCADE,
+    "file" text NOT NULL,
+    UNIQUE(idMovie,file)
+);
+
+CREATE TABLE concertFiles (
+    "idFile" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "idConcert" integer NOT NULL REFERENCES concerts(idConcert) ON DELETE CASCADE,
+    "file" text NOT NULL,
+    UNIQUE(idConcert,file)
+);
+
+CREATE TABLE episodes (
+    "idEpisode" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "content" text NOT NULL,
+    "idShow" integer NOT NULL REFERENCES shows(idShow) ON DELETE CASCADE,
+    "seasonNumber" integer NOT NULL,
+    "episodeNumber" integer NOT NULL,
+    "path" text NOT NULL
+);
+
+CREATE TABLE episodeFiles (
+    "idFile" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "idEpisode" integer NOT NULL REFERENCES episodes(idEpisode) ON DELETE CASCADE,
+    "file" text NOT NULL,
+    UNIQUE(idEpisode,file)
+);
+
+CREATE TABLE albums (
+    "idAlbum" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "idArtist" integer NOT NULL REFERENCES artists(idArtist) ON DELETE CASCADE,
+    "content" text NOT NULL,
+    "dir" text NOT NULL,
+    "path" text NOT NULL
+);
+
+CREATE TABLE movieSubtitles (
+    "idSubtitle" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "idMovie" integer NOT NULL REFERENCES movies(idMovie) ON DELETE CASCADE,
+    "files" text NOT NULL,
+    "language" text NOT NULL,
+    "forced" integer NOT NULL
+);
+
+CREATE INDEX id_subtitle_idx ON movieSubtitles(idMovie)

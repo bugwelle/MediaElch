@@ -117,3 +117,17 @@ TEST_CASE("Every file connection uses durable WAL writes", "[database]")
         CHECK(query.value(0).toString() == QStringLiteral("wal"));
     }
 }
+
+TEST_CASE("Foreign key enforcement is enabled on each independent file connection", "[database]")
+{
+    QTemporaryDir dir;
+    REQUIRE(dir.isValid());
+    Database first{dir.filePath("cache.sqlite")};
+    Database second{dir.filePath("cache.sqlite")};
+    for (auto* database : {&first, &second}) {
+        QSqlQuery query(database->db());
+        REQUIRE(query.exec("PRAGMA foreign_keys"));
+        REQUIRE(query.next());
+        CHECK(query.value(0).toInt() == 1);
+    }
+}

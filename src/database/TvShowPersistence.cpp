@@ -35,22 +35,15 @@ void TvShowPersistence::add(TvShow* show, DirectoryPath path)
 
     show->setDatabaseId(query.lastInsertId().toInt());
 
-    query.prepare("SELECT showMissingEpisodes, hideSpecialsInMissingEpisodes FROM showsSettings WHERE dir=:dir");
-    query.bindValue(":dir", show->dir().toString());
-    query.exec();
-    if (query.next()) {
-        show->setShowMissingEpisodes(query.value(query.record().indexOf("showMissingEpisodes")).toInt() == 1, false);
-        show->setHideSpecialsInMissingEpisodes(
-            query.value(query.record().indexOf("hideSpecialsInMissingEpisodes")).toInt() == 1, false);
-    } else {
-        query.prepare("INSERT INTO showsSettings(showMissingEpisodes, hideSpecialsInMissingEpisodes, dir, tmdbid, url) "
-                      "VALUES(0, 0, :dir, :tmdbid, :url)");
-        query.bindValue(":dir", show->dir().toString());
-        query.bindValue(":tmdbid", show->tmdbId().isValid() ? show->tmdbId().toString() : QStringLiteral(""));
-        query.bindValue(":url", show->episodeGuideUrl().isEmpty() ? "" : show->episodeGuideUrl());
-        query.exec();
-        show->setShowMissingEpisodes(false, false);
-        show->setHideSpecialsInMissingEpisodes(false, false);
+    const auto settingsId = showsSettingsId(show);
+    if (!settingsId.isValid()) {
+        return;
+    }
+    query.prepare("SELECT showMissingEpisodes, hideSpecialsInMissingEpisodes FROM showsSettings WHERE idShow=:id");
+    query.bindValue(":id", settingsId.toInt());
+    if (query.exec() && query.next()) {
+        show->setShowMissingEpisodes(query.value(0).toBool(), false);
+        show->setHideSpecialsInMissingEpisodes(query.value(1).toBool(), false);
     }
 }
 
@@ -324,13 +317,17 @@ mediaelch::DatabaseId TvShowPersistence::showsSettingsId(TvShow* show)
     QSqlQuery query(db());
     query.prepare("SELECT idShow FROM showsSettings WHERE dir=:dir");
     query.bindValue(":dir", show->dir().toString());
-    query.exec();
+    if (!query.exec()) {
+        qCWarning(generic) << "[Database] Could not read TV show settings:" << query.lastError().text();
+        return {};
+    }
     if (query.next()) {
         return query.value(0).toInt();
     }
 
-    query.prepare("INSERT INTO showsSettings(showMissingEpisodes, hideSpecialsInMissingEpisodes, dir, tmdbid, url) "
-                  "VALUES(:show, :hide, :dir, :tmdbid, :url)");
+    query.prepare(
+        "INSERT OR IGNORE INTO showsSettings(showMissingEpisodes, hideSpecialsInMissingEpisodes, dir, tmdbid, url) "
+        "VALUES(:show, :hide, :dir, :tmdbid, :url)");
     query.bindValue(":dir", show->dir().toString());
     query.bindValue(":show", 0);
     query.bindValue(":hide", 0);
@@ -340,14 +337,19 @@ mediaelch::DatabaseId TvShowPersistence::showsSettingsId(TvShow* show)
         qCWarning(generic) << "[Database] Could not create TV show settings:" << query.lastError().text();
         return {};
     }
-    return query.lastInsertId().toInt();
+    query.prepare("SELECT idShow FROM showsSettings WHERE dir=:dir");
+    query.bindValue(":dir", show->dir().toString());
+    if (query.exec() && query.next()) {
+        return query.value(0).toInt();
+    }
+    return {};
 }
 
 bool TvShowPersistence::clearEpisodeList(mediaelch::DatabaseId showsSettingsId)
 {
     QSqlQuery query(db());
-    query.prepare("UPDATE showsEpisodes SET updated=0 WHERE idShow=:idShow");
-    query.bindValue(":idShow", showsSettingsId.toInt());
+    query.prepare("UPDATE showsEpisodes SET updated=0 WHERE idShowSettings=:idShowSettings");
+    query.bindValue(":idShowSettings", showsSettingsId.toInt());
     return query.exec();
 }
 
@@ -362,7 +364,7 @@ bool TvShowPersistence::addEpisodeToShowList(TvShowEpisode* episode,
     const QString tmdbIdValue = tmdbId.isValid() ? tmdbId.toString() : QStringLiteral("");
     if (tmdbId.isValid()) {
         // An episode may gain a TMDb ID after previously being scraped from another source.
-        query.prepare("SELECT idEpisode FROM showsEpisodes WHERE idShow=:idShow AND "
+        query.prepare("SELECT idEpisode FROM showsEpisodes WHERE idShowSettings=:idShowSettings AND "
                       "(tmdbid=:tmdbId OR (tmdbid='' AND seasonNumber=:seasonNumber AND episodeNumber=:episodeNumber)) "
                       "ORDER BY (tmdbid=:tmdbId) DESC LIMIT 1");
         query.bindValue(":tmdbId", tmdbIdValue);
@@ -371,10 +373,10 @@ bool TvShowPersistence::addEpisodeToShowList(TvShowEpisode* episode,
             qCWarning(generic) << "[Database] Cannot cache an episode without a TMDb ID or season/episode numbers";
             return false;
         }
-        query.prepare("SELECT idEpisode FROM showsEpisodes WHERE idShow=:idShow "
+        query.prepare("SELECT idEpisode FROM showsEpisodes WHERE idShowSettings=:idShowSettings "
                       "AND seasonNumber=:seasonNumber AND episodeNumber=:episodeNumber LIMIT 1");
     }
-    query.bindValue(":idShow", showsSettingsId.toInt());
+    query.bindValue(":idShowSettings", showsSettingsId.toInt());
     query.bindValue(":seasonNumber", episode->seasonNumber().toInt());
     query.bindValue(":episodeNumber", episode->episodeNumber().toInt());
     if (!query.exec()) {
@@ -396,10 +398,11 @@ bool TvShowPersistence::addEpisodeToShowList(TvShowEpisode* episode,
             return false;
         }
     } else {
-        query.prepare("INSERT INTO showsEpisodes(content, idShow, seasonNumber, episodeNumber, tmdbid, updated) "
-                      "VALUES(:content, :idShow, :seasonNumber, :episodeNumber, :tmdbId, 1)");
+        query.prepare(
+            "INSERT INTO showsEpisodes(content, idShowSettings, seasonNumber, episodeNumber, tmdbid, updated) "
+            "VALUES(:content, :idShowSettings, :seasonNumber, :episodeNumber, :tmdbId, 1)");
         query.bindValue(":content", QString::fromUtf8(xmlContent));
-        query.bindValue(":idShow", showsSettingsId.toInt());
+        query.bindValue(":idShowSettings", showsSettingsId.toInt());
         query.bindValue(":seasonNumber", episode->seasonNumber().toInt());
         query.bindValue(":episodeNumber", episode->episodeNumber().toInt());
         query.bindValue(":tmdbId", tmdbIdValue);
@@ -414,8 +417,8 @@ bool TvShowPersistence::addEpisodeToShowList(TvShowEpisode* episode,
 bool TvShowPersistence::cleanUpEpisodeList(mediaelch::DatabaseId showsSettingsId)
 {
     QSqlQuery query(db());
-    query.prepare("DELETE FROM showsEpisodes WHERE idShow=:idShow AND updated=0");
-    query.bindValue(":idShow", showsSettingsId.toInt());
+    query.prepare("DELETE FROM showsEpisodes WHERE idShowSettings=:idShowSettings AND updated=0");
+    query.bindValue(":idShowSettings", showsSettingsId.toInt());
     return query.exec();
 }
 
@@ -438,8 +441,9 @@ QVector<TvShowEpisode*> TvShowPersistence::showsEpisodes(TvShow* show)
     DatabaseId id = showsSettingsId(show);
     QVector<TvShowEpisode*> episodes;
     QSqlQuery query(db());
-    query.prepare("SELECT idEpisode, content, seasonNumber, episodeNumber FROM showsEpisodes WHERE idShow=:idShow");
-    query.bindValue(":idShow", id.toInt());
+    query.prepare("SELECT idEpisode, content, seasonNumber, episodeNumber FROM showsEpisodes WHERE "
+                  "idShowSettings=:idShowSettings");
+    query.bindValue(":idShowSettings", id.toInt());
     query.exec();
     while (query.next()) {
         auto* episode = new TvShowEpisode(QStringList(), show);

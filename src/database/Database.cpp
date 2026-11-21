@@ -143,25 +143,14 @@ bool Database::guessImport(QString fileName, QString& type, QString& path)
 
 void Database::setLabel(const FileList& fileNames, ColorLabel colorLabel)
 {
-    // no locker, as this function is called by add()
-
-    int color = static_cast<int>(colorLabel);
     QSqlQuery query(db());
-    for (const FilePath& fileName : fileNames) {
-        query.prepare("SELECT idLabel FROM labels WHERE fileName=:fileName");
-        query.bindValue(":fileName", fileName.toString());
-        query.exec();
-        if (query.next()) {
-            int idLabel = query.value(query.record().indexOf("idLabel")).toInt();
-            query.prepare("UPDATE labels SET color=:color WHERE idLabel=:idLabel");
-            query.bindValue(":idLabel", idLabel);
-            query.bindValue(":color", color);
-            query.exec();
-        } else {
-            query.prepare("INSERT INTO labels(color, fileName) VALUES(:color, :fileName)");
-            query.bindValue(":color", color);
-            query.bindValue(":fileName", fileName.toString());
-            query.exec();
+    for (const auto& fileName : fileNames) {
+        // The unique filename key makes concurrent first writes atomic as well.
+        query.prepare("INSERT OR REPLACE INTO labels(color,fileName) VALUES(:color,:file)");
+        query.bindValue(":color", static_cast<int>(colorLabel));
+        query.bindValue(":file", fileName.toString());
+        if (!query.exec()) {
+            qCWarning(generic) << "[Database] Could not store label:" << query.lastError().text();
         }
     }
 }
@@ -186,7 +175,7 @@ ColorLabel Database::getLabel(const mediaelch::FileList& fileNames)
 QString Database::getSchema()
 {
     QSqlQuery query(*m_db);
-    query.exec("select sql from sqlite_schema;");
+    query.exec("SELECT sql FROM sqlite_master WHERE sql IS NOT NULL ORDER BY rowid");
     QStringList tables;
     while (query.next()) {
         tables << query.value(0).toString();
@@ -234,7 +223,7 @@ bool Database::normalizeMovieTimestamps()
 
 int Database::schemaVersion()
 {
-    return 19;
+    return 20;
 }
 
 bool Database::setupDatabase()
@@ -292,7 +281,8 @@ bool Database::setupDatabase()
         "016_movieSubtitles.sql",
         "017_showEpisodes.sql",
         "018_index_fix.sql",
-        "019_storage_types.sql"};
+        "019_storage_types.sql",
+        "020_relationships.sql"};
     for (int nextVersion = version + 1; nextVersion <= latestVersion; ++nextVersion) {
         if (!executeSqlStatementsFromFile(":/sql/" + migrations.at(nextVersion - 15), query, m_initializationError)
             || (nextVersion == 19 && !normalizeMovieTimestamps()) || !updateDbVersion(nextVersion)) {
@@ -304,12 +294,17 @@ bool Database::setupDatabase()
         m_initializationError = "Could not commit schema migration";
         return false;
     }
-    for (const auto& sql : {"PRAGMA synchronous=FULL", "PRAGMA journal_mode=WAL", "PRAGMA cache_size=20000"}) {
+    for (const auto& sql :
+        {"PRAGMA synchronous=FULL", "PRAGMA journal_mode=WAL", "PRAGMA cache_size=20000", "PRAGMA foreign_keys=ON"}) {
         if (!query.exec(sql)) {
             m_initializationError = query.lastError().text();
             return false;
         }
         query.finish();
+    }
+    if (!query.exec("PRAGMA foreign_keys") || !query.next() || query.value(0).toInt() != 1) {
+        m_initializationError = "Foreign key enforcement is unavailable";
+        return false;
     }
     return true;
 }
