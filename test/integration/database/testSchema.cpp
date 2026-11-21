@@ -1,10 +1,13 @@
 #include "test/integration/database/DatabaseTestHelpers.h"
 
 #include "database/Database.h"
+#include "database/MoviePersistence.h"
 #include "test/helpers/resource_dir.h"
 
 #include <QFile>
 #include <QTemporaryDir>
+#include <QUuid>
+#include <functional>
 
 namespace {
 
@@ -18,6 +21,27 @@ void applyMigration(QSqlDatabase db, const QString& filename)
             test::executeSql(db, statement);
         }
     }
+}
+
+void legacyDatabase(const QString& path, int version, const std::function<void(QSqlDatabase)>& populate)
+{
+    const auto name = QUuid::createUuid().toString();
+    {
+        auto db = QSqlDatabase::addDatabase("QSQLITE", name);
+        db.setDatabaseName(path);
+        REQUIRE(db.open());
+        applyMigration(db, "014_initial.sql");
+        applyMigration(db, "000_settings.sql");
+        const QStringList migrations{
+            "015_artists_albums.sql", "016_movieSubtitles.sql", "017_showEpisodes.sql", "018_index_fix.sql"};
+        for (int next = 15; next <= version; ++next) {
+            applyMigration(db, migrations.at(next - 15));
+        }
+        test::executeSql(db, QStringLiteral("INSERT INTO settings VALUES(1,'%1')").arg(version));
+        populate(db);
+        db.close();
+    }
+    QSqlDatabase::removeDatabase(name);
 }
 
 } // namespace
@@ -149,12 +173,10 @@ TEST_CASE("Failed migrations roll back both schema and version changes", "[datab
     QTemporaryDir dir;
     REQUIRE(dir.isValid());
     const auto path = dir.filePath("cache.sqlite");
-    {
-        Database database{path};
-        test::executeSql(database.db(), "UPDATE settings SET value='17'");
-        test::executeSql(database.db(), "INSERT INTO labels(color,fileName) VALUES(1,'keep')");
-        test::executeSql(database.db(), "ALTER TABLE labels RENAME TO saved_labels");
-    }
+    legacyDatabase(path, 17, [](QSqlDatabase db) {
+        test::executeSql(db, "INSERT INTO labels(color,fileName) VALUES(1,'keep')");
+        test::executeSql(db, "ALTER TABLE labels RENAME TO saved_labels");
+    });
     Database rejected{path};
     CHECK_FALSE(rejected.db().isOpen());
     auto raw = rejected.db();
@@ -167,4 +189,44 @@ TEST_CASE("Failed migrations roll back both schema and version changes", "[datab
     query.finish();
     REQUIRE(query.exec("SELECT name FROM sqlite_master WHERE name='id_label_filename_idx'"));
     REQUIRE(query.next());
+}
+
+TEST_CASE("Legacy BLOB paths and date strings migrate to explicit storage types", "[database][schema]")
+{
+    QTemporaryDir dir;
+    REQUIRE(dir.isValid());
+    const auto path = dir.filePath("cache.sqlite");
+    const auto timestamp = QDateTime::fromString("2026-10-02T12:30:00.123", Qt::ISODate);
+    legacyDatabase(path, 18, [&](QSqlDatabase db) {
+        QSqlQuery query(db);
+        query.prepare(
+            "INSERT INTO movies(content,lastModified,inSeparateFolder,hasPoster,hasBackdrop,hasLogo,hasClearArt,"
+            "hasCdArt,hasBanner,hasThumb,hasExtraFanarts,discType,path) "
+            "VALUES(:content,:time,1,0,0,0,0,0,0,0,0,0,:path)");
+        query.bindValue(":time", timestamp);
+        query.bindValue(":path", QStringLiteral("/ä's").toUtf8());
+        query.bindValue(":content", QStringLiteral("<movie>日本語</movie>").toUtf8());
+        REQUIRE(query.exec());
+        query.prepare("INSERT INTO movieFiles(idMovie,file) VALUES(1,:file)");
+        query.bindValue(":file", mediaelch::FilePath(QStringLiteral("/ä's/movie.mkv")).toString().toUtf8());
+        REQUIRE(query.exec());
+    });
+    Database migrated{path};
+    REQUIRE(migrated.db().isOpen());
+    QSqlQuery query(migrated.db());
+    REQUIRE(query.exec("SELECT typeof(path),typeof(content),typeof(lastModified),lastModified FROM movies"));
+    REQUIRE(query.next());
+    CHECK(query.value(0).toString() == QStringLiteral("text"));
+    CHECK(query.value(1).toString() == QStringLiteral("text"));
+    CHECK(query.value(2).toString() == QStringLiteral("integer"));
+    CHECK(query.value(3).toLongLong() == timestamp.toMSecsSinceEpoch());
+    query.finish();
+    QObject owner;
+    mediaelch::MoviePersistence persistence{migrated};
+    auto movies = persistence.moviesInDirectory(mediaelch::DirectoryPath(QStringLiteral("/ä's")), &owner);
+    REQUIRE(movies.size() == 1);
+    CHECK(movies.first()->fileLastModified() == timestamp);
+    CHECK(movies.first()->nfoContent() == QStringLiteral("<movie>日本語</movie>"));
+    CHECK(
+        movies.first()->files().first().toString() == mediaelch::FilePath(QStringLiteral("/ä's/movie.mkv")).toString());
 }

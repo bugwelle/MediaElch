@@ -38,10 +38,10 @@ void ConcertPersistence::clearConcertsInDirectory(DirectoryPath path)
 {
     QSqlQuery query(db());
     query.prepare("DELETE FROM concertFiles WHERE idConcert IN (SELECT idConcert FROM concerts WHERE path=:path)");
-    query.bindValue(":path", path.toString().toUtf8());
+    query.bindValue(":path", path.toString());
     query.exec();
     query.prepare("DELETE FROM concerts WHERE path=:path");
-    query.bindValue(":path", path.toString().toUtf8());
+    query.bindValue(":path", path.toString());
     query.exec();
 }
 
@@ -50,16 +50,16 @@ void ConcertPersistence::add(Concert* concert, DirectoryPath path)
     QSqlQuery query(db());
     query.prepare("INSERT INTO concerts(content, inSeparateFolder, path) "
                   "VALUES(:content, :inSeparateFolder, :path)");
-    query.bindValue(":content", concert->nfoContent().isEmpty() ? "" : concert->nfoContent().toUtf8());
+    query.bindValue(":content", concert->nfoContent().isEmpty() ? "" : concert->nfoContent());
     query.bindValue(":inSeparateFolder", (concert->inSeparateFolder() ? 1 : 0));
-    query.bindValue(":path", path.toString().toUtf8());
+    query.bindValue(":path", path.toString());
     query.exec();
     int insertId = query.lastInsertId().toInt();
 
     for (const FilePath& file : concert->files()) {
         query.prepare("INSERT INTO concertFiles(idConcert, file) VALUES(:idConcert, :file)");
         query.bindValue(":idConcert", insertId);
-        query.bindValue(":file", file.toString().toUtf8());
+        query.bindValue(":file", file.toString());
         query.exec();
     }
     concert->setDatabaseId(insertId);
@@ -88,7 +88,7 @@ void ConcertPersistence::update(Concert* concert)
     for (const FilePath& file : concert->files()) {
         query.prepare("INSERT INTO concertFiles(idConcert, file) VALUES(:idConcert, :file)");
         query.bindValue(":idConcert", concert->databaseId().toInt());
-        query.bindValue(":file", file.toString().toUtf8());
+        query.bindValue(":file", file.toString());
         if (!transaction.exec(query)) {
             return;
         }
@@ -103,7 +103,7 @@ QVector<Concert*> ConcertPersistence::concertsInDirectory(DirectoryPath path)
     QSqlQuery query(db());
     QSqlQuery queryFiles(db());
     query.prepare("SELECT idConcert, content, inSeparateFolder FROM concerts WHERE path=:path");
-    query.bindValue(":path", path.toString().toUtf8());
+    query.bindValue(":path", path.toString());
     query.exec();
     while (query.next()) {
         QStringList files;

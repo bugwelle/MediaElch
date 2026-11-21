@@ -98,7 +98,7 @@ TEST_CASE("Persist the hide-specials setting", "[database][persistence]")
     TvShow show;
     query.prepare("INSERT INTO showsSettings(tmdbid, url, showMissingEpisodes, hideSpecialsInMissingEpisodes, dir) "
                   "VALUES('123', '', 1, 0, :dir)");
-    query.bindValue(":dir", show.dir().toString().toUtf8());
+    query.bindValue(":dir", show.dir().toString());
     REQUIRE(query.exec());
     show.setTmdbId(TmdbId(123));
     mediaelch::TvShowPersistence persistence{database};

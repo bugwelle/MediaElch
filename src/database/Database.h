@@ -36,6 +36,7 @@ public:
 
 private:
     bool setupDatabase();
+    bool normalizeMovieTimestamps();
 
 private:
     mediaelch::DirectoryPath m_dataLocation;

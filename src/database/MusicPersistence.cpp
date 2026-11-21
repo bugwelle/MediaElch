@@ -36,7 +36,7 @@ void MusicPersistence::clearArtistsInDirectory(DirectoryPath path)
 {
     QSqlQuery query(db());
     query.prepare("DELETE FROM artists WHERE path=:path");
-    query.bindValue(":path", path.toString().toUtf8());
+    query.bindValue(":path", path.toString());
     query.exec();
     clearAlbumsInDirectory(path);
 }
@@ -46,9 +46,9 @@ void MusicPersistence::add(Artist* artist, DirectoryPath path)
     QSqlQuery query(db());
     query.prepare("INSERT INTO artists(content, dir, path) "
                   "VALUES(:content, :dir, :path)");
-    query.bindValue(":content", artist->nfoContent().isEmpty() ? "" : artist->nfoContent().toUtf8());
-    query.bindValue(":dir", artist->path().toString().toUtf8());
-    query.bindValue(":path", path.toString().toUtf8());
+    query.bindValue(":content", artist->nfoContent().isEmpty() ? "" : artist->nfoContent());
+    query.bindValue(":dir", artist->path().toString());
+    query.bindValue(":path", path.toString());
     query.exec();
     artist->setDatabaseId(query.lastInsertId().toInt());
 }
@@ -67,7 +67,7 @@ QVector<Artist*> MusicPersistence::artistsInDirectory(DirectoryPath path)
     QVector<Artist*> artists;
     QSqlQuery query(db());
     query.prepare("SELECT idArtist, content, dir FROM artists WHERE path=:path");
-    query.bindValue(":path", path.toString().toUtf8());
+    query.bindValue(":path", path.toString());
     query.exec();
     while (query.next()) {
         mediaelch::DirectoryPath dir(QString::fromUtf8(query.value(query.record().indexOf("dir")).toByteArray()));
@@ -93,7 +93,7 @@ void MusicPersistence::clearAlbumsInDirectory(DirectoryPath path)
 {
     QSqlQuery query(db());
     query.prepare("DELETE FROM albums WHERE path=:path");
-    query.bindValue(":path", path.toString().toUtf8());
+    query.bindValue(":path", path.toString());
     query.exec();
 }
 
@@ -103,9 +103,9 @@ void MusicPersistence::add(Album* album, DirectoryPath path)
     query.prepare("INSERT INTO albums(idArtist, content, dir, path) "
                   "VALUES(:idArtist, :content, :dir, :path)");
     query.bindValue(":idArtist", album->artistObj()->databaseId().toInt());
-    query.bindValue(":content", album->nfoContent().isEmpty() ? "" : album->nfoContent().toUtf8());
-    query.bindValue(":dir", album->path().toString().toUtf8());
-    query.bindValue(":path", path.toString().toUtf8());
+    query.bindValue(":content", album->nfoContent().isEmpty() ? "" : album->nfoContent());
+    query.bindValue(":dir", album->path().toString());
+    query.bindValue(":path", path.toString());
     query.exec();
     album->setDatabaseId(query.lastInsertId().toInt());
 }

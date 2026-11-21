@@ -7,6 +7,7 @@
 #include "log/Log.h"
 #include "settings/Settings.h"
 
+#include <QDateTime>
 #include <QDir>
 #include <QMutexLocker>
 #include <QSqlError>
@@ -148,7 +149,7 @@ void Database::setLabel(const FileList& fileNames, ColorLabel colorLabel)
     QSqlQuery query(db());
     for (const FilePath& fileName : fileNames) {
         query.prepare("SELECT idLabel FROM labels WHERE fileName=:fileName");
-        query.bindValue(":fileName", fileName.toString().toUtf8());
+        query.bindValue(":fileName", fileName.toString());
         query.exec();
         if (query.next()) {
             int idLabel = query.value(query.record().indexOf("idLabel")).toInt();
@@ -159,7 +160,7 @@ void Database::setLabel(const FileList& fileNames, ColorLabel colorLabel)
         } else {
             query.prepare("INSERT INTO labels(color, fileName) VALUES(:color, :fileName)");
             query.bindValue(":color", color);
-            query.bindValue(":fileName", fileName.toString().toUtf8());
+            query.bindValue(":fileName", fileName.toString());
             query.exec();
         }
     }
@@ -173,7 +174,7 @@ ColorLabel Database::getLabel(const mediaelch::FileList& fileNames)
 
     QSqlQuery query(db());
     query.prepare("SELECT color FROM labels WHERE fileName=:fileName");
-    query.bindValue(":fileName", fileNames.first().toString().toUtf8());
+    query.bindValue(":fileName", fileNames.first().toString());
     bool success = query.exec();
     if (success && query.next()) {
         return static_cast<ColorLabel>(query.value("color").toInt());
@@ -193,9 +194,47 @@ QString Database::getSchema()
     return tables.join(";\n\n");
 }
 
+bool Database::normalizeMovieTimestamps()
+{
+    QSqlQuery query(*m_db);
+    if (!query.exec("SELECT idMovie,lastModified FROM movies")) {
+        m_initializationError = query.lastError().text();
+        return false;
+    }
+    QVector<QPair<qlonglong, qlonglong>> timestamps;
+    while (query.next()) {
+        bool numeric = false;
+        qlonglong millis = query.value(1).toLongLong(&numeric);
+        if (!numeric) {
+            const auto date = query.value(1).toDateTime();
+            if (!date.isValid()) {
+                m_initializationError = "Invalid legacy movie timestamp";
+                return false;
+            }
+            millis = date.toMSecsSinceEpoch();
+        }
+        timestamps.append(qMakePair(query.value(0).toLongLong(), millis));
+    }
+    if (query.lastError().isValid()) {
+        m_initializationError = query.lastError().text();
+        return false;
+    }
+    query.finish();
+    for (const auto& timestamp : timestamps) {
+        query.prepare("UPDATE movies SET lastModified=:time WHERE idMovie=:id");
+        query.bindValue(":time", timestamp.second);
+        query.bindValue(":id", timestamp.first);
+        if (!query.exec()) {
+            m_initializationError = query.lastError().text();
+            return false;
+        }
+    }
+    return true;
+}
+
 int Database::schemaVersion()
 {
-    return 18;
+    return 19;
 }
 
 bool Database::setupDatabase()
@@ -249,11 +288,14 @@ bool Database::setupDatabase()
         }
         version = 14;
     }
-    const QStringList migrations{
-        "015_artists_albums.sql", "016_movieSubtitles.sql", "017_showEpisodes.sql", "018_index_fix.sql"};
+    const QStringList migrations{"015_artists_albums.sql",
+        "016_movieSubtitles.sql",
+        "017_showEpisodes.sql",
+        "018_index_fix.sql",
+        "019_storage_types.sql"};
     for (int nextVersion = version + 1; nextVersion <= latestVersion; ++nextVersion) {
         if (!executeSqlStatementsFromFile(":/sql/" + migrations.at(nextVersion - 15), query, m_initializationError)
-            || !updateDbVersion(nextVersion)) {
+            || (nextVersion == 19 && !normalizeMovieTimestamps()) || !updateDbVersion(nextVersion)) {
             return false;
         }
     }

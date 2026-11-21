@@ -15,9 +15,10 @@ namespace {
 
 void bindMovieSnapshot(QSqlQuery& query, Movie* movie)
 {
-    query.bindValue(":content", movie->nfoContent().isEmpty() ? "" : movie->nfoContent().toUtf8());
-    query.bindValue(
-        ":lastModified", movie->fileLastModified().isNull() ? QDateTime::currentDateTime() : movie->fileLastModified());
+    query.bindValue(":content", movie->nfoContent().isEmpty() ? "" : movie->nfoContent());
+    query.bindValue(":lastModified",
+        (movie->fileLastModified().isNull() ? QDateTime::currentDateTime() : movie->fileLastModified())
+            .toMSecsSinceEpoch());
     query.bindValue(":inSeparateFolder", (movie->inSeparateFolder() ? 1 : 0));
     query.bindValue(":hasPoster", movie->hasImage(ImageType::MoviePoster) ? 1 : 0);
     query.bindValue(":hasBackdrop", movie->hasImage(ImageType::MovieBackdrop) ? 1 : 0);
@@ -62,13 +63,13 @@ void MoviePersistence::clearMoviesInDirectory(DirectoryPath path)
 {
     QSqlQuery query(db());
     query.prepare("DELETE FROM movieFiles WHERE idMovie IN (SELECT idMovie FROM movies WHERE path=:path)");
-    query.bindValue(":path", path.toString().toUtf8());
+    query.bindValue(":path", path.toString());
     query.exec();
     query.prepare("DELETE FROM movieSubtitles WHERE idMovie IN (SELECT idMovie FROM movies WHERE path=:path)");
-    query.bindValue(":path", path.toString().toUtf8());
+    query.bindValue(":path", path.toString());
     query.exec();
     query.prepare("DELETE FROM movies WHERE path=:path");
-    query.bindValue(":path", path.toString().toUtf8());
+    query.bindValue(":path", path.toString());
     query.exec();
 }
 
@@ -80,14 +81,14 @@ void MoviePersistence::addMovie(Movie* movie, DirectoryPath path)
                   "VALUES(:content, :lastModified, :inSeparateFolder, :hasPoster, :hasBackdrop, :hasLogo, "
                   ":hasClearArt, :hasCdArt, :hasBanner, :hasThumb, :hasExtraFanarts, :discType, :path)");
     bindMovieSnapshot(query, movie);
-    query.bindValue(":path", path.toString().toUtf8());
+    query.bindValue(":path", path.toString());
     query.exec();
     int insertId = query.lastInsertId().toInt();
 
     for (const mediaelch::FilePath& file : movie->files()) {
         query.prepare("INSERT INTO movieFiles(idMovie, file) VALUES(:idMovie, :file)");
         query.bindValue(":idMovie", insertId);
-        query.bindValue(":file", file.toString().toUtf8());
+        query.bindValue(":file", file.toString());
         query.exec();
     }
 
@@ -132,7 +133,7 @@ void MoviePersistence::update(Movie* movie)
     for (const mediaelch::FilePath& file : movie->files()) {
         query.prepare("INSERT INTO movieFiles(idMovie, file) VALUES(:idMovie, :file)");
         query.bindValue(":idMovie", movie->databaseId().toInt());
-        query.bindValue(":file", file.toString().toUtf8());
+        query.bindValue(":file", file.toString());
         if (!transaction.exec(query)) {
             return;
         }
@@ -170,7 +171,7 @@ QVector<Movie*> MoviePersistence::moviesInDirectory(DirectoryPath path, QObject*
                   "LEFT JOIN labels L ON MF.file=L.fileName "
                   "WHERE path=:path "
                   "ORDER BY M.idMovie, MF.file");
-    query.bindValue(":path", path.toString().toUtf8());
+    query.bindValue(":path", path.toString());
     query.exec();
 
     QMap<int, Movie*> movies;
@@ -189,7 +190,8 @@ QVector<Movie*> MoviePersistence::moviesInDirectory(DirectoryPath path, QObject*
             movie = new Movie(QStringList(), movieParent);
             movie->blockSignals(true);
             movie->setDatabaseId(query.value(query.record().indexOf("idMovie")).toInt());
-            movie->setFileLastModified(query.value(query.record().indexOf("lastModified")).toDateTime());
+            movie->setFileLastModified(
+                QDateTime::fromMSecsSinceEpoch(query.value(query.record().indexOf("lastModified")).toLongLong()));
             movie->setInSeparateFolder(query.value(query.record().indexOf("inSeparateFolder")).toInt() == 1);
             movie->setNfoContent(QString::fromUtf8(query.value(query.record().indexOf("content")).toByteArray()));
             movie->images().setHasImage(
