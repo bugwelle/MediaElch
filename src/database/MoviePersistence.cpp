@@ -11,6 +11,27 @@
 
 namespace mediaelch {
 
+namespace {
+
+void bindMovieSnapshot(QSqlQuery& query, Movie* movie)
+{
+    query.bindValue(":content", movie->nfoContent().isEmpty() ? "" : movie->nfoContent().toUtf8());
+    query.bindValue(
+        ":lastModified", movie->fileLastModified().isNull() ? QDateTime::currentDateTime() : movie->fileLastModified());
+    query.bindValue(":inSeparateFolder", (movie->inSeparateFolder() ? 1 : 0));
+    query.bindValue(":hasPoster", movie->hasImage(ImageType::MoviePoster) ? 1 : 0);
+    query.bindValue(":hasBackdrop", movie->hasImage(ImageType::MovieBackdrop) ? 1 : 0);
+    query.bindValue(":hasLogo", movie->hasImage(ImageType::MovieLogo) ? 1 : 0);
+    query.bindValue(":hasClearArt", movie->hasImage(ImageType::MovieClearArt) ? 1 : 0);
+    query.bindValue(":hasCdArt", movie->hasImage(ImageType::MovieCdArt) ? 1 : 0);
+    query.bindValue(":hasBanner", movie->hasImage(ImageType::MovieBanner) ? 1 : 0);
+    query.bindValue(":hasThumb", movie->hasImage(ImageType::MovieThumb) ? 1 : 0);
+    query.bindValue(":hasExtraFanarts", movie->images().hasExtraFanarts() ? 1 : 0);
+    query.bindValue(":discType", static_cast<int>(movie->discType()));
+}
+
+} // namespace
+
 MoviePersistence::MoviePersistence(Database& db) : m_db(db)
 {
 }
@@ -58,19 +79,7 @@ void MoviePersistence::addMovie(Movie* movie, DirectoryPath path)
                   "hasClearArt, hasCdArt, hasBanner, hasThumb, hasExtraFanarts, discType, path) "
                   "VALUES(:content, :lastModified, :inSeparateFolder, :hasPoster, :hasBackdrop, :hasLogo, "
                   ":hasClearArt, :hasCdArt, :hasBanner, :hasThumb, :hasExtraFanarts, :discType, :path)");
-    query.bindValue(":content", movie->nfoContent().isEmpty() ? "" : movie->nfoContent().toUtf8());
-    query.bindValue(
-        ":lastModified", movie->fileLastModified().isNull() ? QDateTime::currentDateTime() : movie->fileLastModified());
-    query.bindValue(":inSeparateFolder", (movie->inSeparateFolder() ? 1 : 0));
-    query.bindValue(":hasPoster", movie->hasImage(ImageType::MoviePoster) ? 1 : 0);
-    query.bindValue(":hasBackdrop", movie->hasImage(ImageType::MovieBackdrop) ? 1 : 0);
-    query.bindValue(":hasLogo", movie->hasImage(ImageType::MovieLogo) ? 1 : 0);
-    query.bindValue(":hasClearArt", movie->hasImage(ImageType::MovieClearArt) ? 1 : 0);
-    query.bindValue(":hasCdArt", movie->hasImage(ImageType::MovieCdArt) ? 1 : 0);
-    query.bindValue(":hasBanner", movie->hasImage(ImageType::MovieBanner) ? 1 : 0);
-    query.bindValue(":hasThumb", movie->hasImage(ImageType::MovieThumb) ? 1 : 0);
-    query.bindValue(":hasExtraFanarts", movie->images().hasExtraFanarts() ? 1 : 0);
-    query.bindValue(":discType", static_cast<int>(movie->discType()));
+    bindMovieSnapshot(query, movie);
     query.bindValue(":path", path.toString().toUtf8());
     query.exec();
     int insertId = query.lastInsertId().toInt();
@@ -105,8 +114,11 @@ void MoviePersistence::update(Movie* movie)
     }
 
     QSqlQuery query(db());
-    query.prepare("UPDATE movies SET content=:content WHERE idMovie=:idMovie");
-    query.bindValue(":content", movie->nfoContent().isEmpty() ? "" : movie->nfoContent());
+    query.prepare("UPDATE movies SET content=:content, lastModified=:lastModified, inSeparateFolder=:inSeparateFolder, "
+                  "hasPoster=:hasPoster, hasBackdrop=:hasBackdrop, hasLogo=:hasLogo, hasClearArt=:hasClearArt, "
+                  "hasCdArt=:hasCdArt, hasBanner=:hasBanner, hasThumb=:hasThumb, hasExtraFanarts=:hasExtraFanarts, "
+                  "discType=:discType WHERE idMovie=:idMovie");
+    bindMovieSnapshot(query, movie);
     query.bindValue(":idMovie", movie->databaseId().toInt());
     if (!transaction.exec(query)) {
         return;

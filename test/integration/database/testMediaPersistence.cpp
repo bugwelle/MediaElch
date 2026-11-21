@@ -76,6 +76,14 @@ TEST_CASE("Movies round trip metadata, files, labels, artwork and subtitles", "[
     CHECK_FALSE(loaded->subtitles().first()->changed());
 
     movie.setFiles(replacementFiles);
+    for (const auto type : Movie::imageTypes()) {
+        movie.images().setHasImage(type, !imagesPresent);
+    }
+    movie.images().setHasExtraFanarts(!imagesPresent);
+    movie.setInSeparateFolder(!imagesPresent);
+    movie.setDiscType(DiscType::Dvd);
+    const auto updatedModified = modified.addDays(1);
+    movie.setFileLastModified(updatedModified);
     const QString updatedNfo = emptyUpdate ? QString() : QStringLiteral("<updated>ä's 日本語</updated>");
     movie.setNfoContent(updatedNfo);
     subtitle->setFiles({"new.srt"});
@@ -85,6 +93,13 @@ TEST_CASE("Movies round trip metadata, files, labels, artwork and subtitles", "[
     movies = persistence.moviesInDirectory(firstDirectory, &owner);
     REQUIRE(movies.size() == 1);
     CHECK(movies.first()->nfoContent() == updatedNfo);
+    CHECK(movies.first()->fileLastModified() == updatedModified);
+    CHECK(movies.first()->discType() == DiscType::Dvd);
+    CHECK(movies.first()->inSeparateFolder() == !imagesPresent);
+    for (const auto type : Movie::imageTypes()) {
+        CHECK(movies.first()->hasImage(type) == !imagesPresent);
+    }
+    CHECK(movies.first()->images().hasExtraFanarts() == !imagesPresent);
     CHECK(movies.first()->files().toStringList() == replacementFiles.toStringList());
     REQUIRE(movies.first()->subtitles().size() == 1);
     CHECK(movies.first()->subtitles().first()->files() == QStringList{"new.srt"});

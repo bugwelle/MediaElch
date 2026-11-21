@@ -179,7 +179,11 @@ bool KodiXml::saveMovie(Movie* movie)
         }
     }
 
-    // TODO: Multithreaded?
+    // Cache the files that actually exist after saving/removing artwork.
+    for (const auto type : Movie::imageTypes()) {
+        movie->images().setHasImage(type, !imageFileName(movie, type).isEmpty());
+    }
+    movie->images().setHasExtraFanarts(!extraFanartNames(movie).isEmpty());
     m_persistence.movies.update(movie);
 
     return true;
