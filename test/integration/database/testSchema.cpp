@@ -291,6 +291,38 @@ TEST_CASE("Relationship migration merges duplicate identities and removes orphan
     CHECK_FALSE(query.next());
 }
 
+TEST_CASE("Common lookups use indexes rather than scanning the library", "[database][schema]")
+{
+    Database database{QStringLiteral(":memory:")};
+    for (const auto* sql : {"SELECT * FROM movies WHERE path='/movies'",
+             "SELECT * FROM concerts WHERE path='/concerts'",
+             "SELECT * FROM shows WHERE path='/shows'",
+             "SELECT * FROM shows WHERE dir='/shows/one'",
+             "SELECT * FROM showsSettings WHERE dir='/shows/one'",
+             "SELECT * FROM artists WHERE path='/music'",
+             "SELECT * FROM albums WHERE idArtist=1",
+             "SELECT * FROM albums WHERE path='/music'",
+             "SELECT * FROM episodes WHERE idShow=1",
+             "SELECT * FROM episodes WHERE path='/shows'",
+             "SELECT * FROM showsEpisodes WHERE idShowSettings=1 AND seasonNumber=1 AND episodeNumber=1",
+             "SELECT * FROM showsEpisodes WHERE idShowSettings=1 AND updated=0",
+             "SELECT S.idMovie,S.files FROM movieSubtitles S JOIN movies M ON M.idMovie=S.idMovie WHERE "
+             "M.path='/movies'"}) {
+        CAPTURE(sql);
+        QSqlQuery query(database.db());
+        REQUIRE(query.exec(QStringLiteral("EXPLAIN QUERY PLAN ") + sql));
+        QStringList plan;
+        while (query.next()) {
+            plan << query.value(3).toString();
+        }
+        REQUIRE_FALSE(plan.isEmpty());
+        INFO(plan.join("; ").toStdString());
+        for (const auto& step : plan) {
+            CHECK_FALSE(step.startsWith("SCAN "));
+        }
+    }
+}
+
 TEST_CASE("A late migration failure restores earlier data conversions and the original version", "[database][schema]")
 {
     QTemporaryDir dir;
@@ -298,8 +330,9 @@ TEST_CASE("A late migration failure restores earlier data conversions and the or
     const auto path = dir.filePath("cache.sqlite");
     legacyDatabase(path, 18, [](QSqlDatabase db) {
         test::executeSql(db, "INSERT INTO labels VALUES(1,1,CAST('/same' AS BLOB)),(2,2,'/same')");
-        test::executeSql(db, "CREATE TRIGGER fail_cleanup BEFORE DELETE ON labels "
-                            "BEGIN SELECT RAISE(ABORT,'test failure'); END");
+        test::executeSql(db,
+            "CREATE TRIGGER fail_cleanup BEFORE DELETE ON labels "
+            "BEGIN SELECT RAISE(ABORT,'test failure'); END");
     });
     Database rejected{path};
     CHECK_FALSE(rejected.db().isOpen());

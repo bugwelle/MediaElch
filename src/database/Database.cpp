@@ -223,7 +223,7 @@ bool Database::normalizeMovieTimestamps()
 
 int Database::schemaVersion()
 {
-    return 20;
+    return 21;
 }
 
 bool Database::setupDatabase()
@@ -282,7 +282,8 @@ bool Database::setupDatabase()
         "017_showEpisodes.sql",
         "018_index_fix.sql",
         "019_storage_types.sql",
-        "020_relationships.sql"};
+        "020_relationships.sql",
+        "021_lookup_indexes.sql"};
     for (int nextVersion = version + 1; nextVersion <= latestVersion; ++nextVersion) {
         if (!executeSqlStatementsFromFile(":/sql/" + migrations.at(nextVersion - 15), query, m_initializationError)
             || (nextVersion == 19 && !normalizeMovieTimestamps()) || !updateDbVersion(nextVersion)) {

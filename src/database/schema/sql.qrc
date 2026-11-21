@@ -8,5 +8,6 @@
         <file>018_index_fix.sql</file>
         <file>019_storage_types.sql</file>
         <file>020_relationships.sql</file>
+        <file>021_lookup_indexes.sql</file>
     </qresource>
 </RCC>

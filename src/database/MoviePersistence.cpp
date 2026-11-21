@@ -221,7 +221,9 @@ QVector<Movie*> MoviePersistence::moviesInDirectory(DirectoryPath path, QObject*
         movie->setFiles(files);
     }
 
-    query.prepare("SELECT idMovie, files, language, forced FROM movieSubtitles");
+    query.prepare("SELECT S.idMovie, S.files, S.language, S.forced FROM movieSubtitles S "
+                  "JOIN movies M ON M.idMovie=S.idMovie WHERE M.path=:path");
+    query.bindValue(":path", path.toString());
     query.exec();
     while (query.next()) {
         int movieId = query.value(query.record().indexOf("idMovie")).toInt();
